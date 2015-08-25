@@ -10,10 +10,14 @@ ice_setup_xml_file = os.path.join(fixtures_path, 'ice-setup.xml')
 class TestArgParser(object):
     def test_missing_filename(self):
         with pytest.raises(SystemExit):
-            parser = parse_args(['-f'])
+            parse_args(['-f'])
+
+    def test_missing_job_name(self):
+        with pytest.raises(SystemExit):
+            parse_args(['-f', ice_setup_xml_file, '-n'])
 
     def test_ice_setup(self):
-        assert parse_args(['-f', ice_setup_xml_file])
+        assert parse_args(['-f', ice_setup_xml_file, '-n', 'ice-setup'])
 
 
 class TestGetXmlRoot(object):

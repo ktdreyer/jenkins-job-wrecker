@@ -24,10 +24,12 @@ def get_xml_root(filename):
     return tree.getroot()
 
 # Walk an XML ElementTree ("root"), and return a YAML string
-def root_to_yaml(root):
+def root_to_yaml(root, name):
     # Top-level "job" data
     job = {}
     build = [{'job': job}]
+
+    job['name'] = name
 
     if root.tag != 'matrix-project':
        raise NotImplementedError, 'We only support matrix-type jobs'
@@ -70,6 +72,10 @@ def parse_args(args):
         '-f', '--filename',
         help='XML file to translate'
     )
+    parser.add_argument(
+        '-n', '--name',
+        help='Name for this job'
+    )
     return parser.parse_args(args)
 
 def main():
@@ -79,5 +85,9 @@ def main():
         log.critical('XML Filename (-f) must be set. Exiting...')
         exit(1)
 
+    if not args.name:
+        log.critical('Job name (-n) must be set. Exiting...')
+        exit(1)
+
     root = get_xml_root(args.filename)
-    print root_to_yaml(root)
+    print root_to_yaml(root, args.name)
