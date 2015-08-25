@@ -1,6 +1,7 @@
 import argparse
 from argparse import ArgumentDefaultsHelpFormatter
 import logging
+import sys
 import textwrap
 import jenkins_job_wrecker.job_handlers as job_handlers
 import xml.etree.ElementTree as ET
@@ -57,7 +58,7 @@ def root_to_yaml(root):
     return dump(build, default_flow_style=False)
 
 # argparse foo
-def parse_args():
+def parse_args(args):
     parser = argparse.ArgumentParser(
         description='Input XML, output YAML.',
         epilog=textwrap.dedent('''
@@ -69,11 +70,10 @@ def parse_args():
         '-f', '--filename',
         help='XML file to translate'
     )
-    return parser.parse_args()
+    return parser.parse_args(args)
 
 def main():
-    global args
-    args = parse_args()
+    args = parse_args(sys.argv[1:])
 
     if not args.filename:
         log.critical('XML Filename (-f) must be set. Exiting...')
