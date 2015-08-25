@@ -1,2 +1,4 @@
 language: python
+install:
+ - pip install jenkins-job-builder
 script: python setup.py test
