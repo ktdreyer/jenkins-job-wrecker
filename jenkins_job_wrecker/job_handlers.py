@@ -35,10 +35,10 @@ def handle_properties(top):
 
 # Handle "<com.coravy.hudson.plugins.github.GithubProjectProperty>..."
 def handle_github_project_property(top):
-    github = []
+    github = {}
     for child in top:
         if child.tag == 'projectUrl':
-            github.append({'url': child.text})
+            github['url'] = child.text
         else:
             raise NotImplementedError("cannot handle XML %s" % child.tag)
     return {'github': github}
