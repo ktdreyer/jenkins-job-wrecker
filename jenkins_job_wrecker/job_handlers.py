@@ -269,11 +269,11 @@ def handle_buildwrappers(top):
     return [[ 'wrappers', wrappers ]]
 
 def handle_executionstrategy(top):
-    strategy = []
+    strategy = {}
     for child in top:
 
         if child.tag == 'runSequentially':
-            strategy.append({'run-sequentially': child.text == 'true'})
+            strategy['run-sequentially'] = (child.text == 'true')
         else:
             raise NotImplementedError("cannot handle XML %s" % child.tag)
 
