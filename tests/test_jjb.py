@@ -11,7 +11,7 @@ ice_setup_xml_file = os.path.join(fixtures_path, 'ice-setup.xml')
 class TestJJB(object):
 
     def test_sanity(self):
-        root = get_xml_root(ice_setup_xml_file)
+        root = get_xml_root(filename=ice_setup_xml_file)
         yaml = root_to_yaml(root, 'ice-setup')
 
         # Run this wrecker YAML thru JJB.

@@ -1,6 +1,9 @@
 import argparse
 from argparse import ArgumentDefaultsHelpFormatter
+import errno
 import logging
+import jenkins
+import os
 import sys
 import textwrap
 import jenkins_job_wrecker.job_handlers as job_handlers
@@ -17,11 +20,16 @@ for handler in logging.getLogger().handlers:
         handler.setFormatter(logging.Formatter(fmt='%(name)s %(levelname)s: %(message)s'))
 
 
-# Given an XML filename, parse it with xml.etree.ElementTree and return the XML
-# tree root.
-def get_xml_root(filename):
-    tree = ET.parse(filename)
-    return tree.getroot()
+# Given a file with XML, or a string of XML, parse it with
+# xml.etree.ElementTree and return the XML tree root.
+def get_xml_root(filename=False, string=False):
+    if filename == False and string == False:
+        raise TypeError('specify a filename or string argument')
+    if filename:
+        tree = ET.parse(filename)
+        return tree.getroot()
+    if string:
+        return ET.fromstring(string)
 
 # Walk an XML ElementTree ("root"), and return a YAML string
 def root_to_yaml(root, name):
@@ -73,21 +81,77 @@ def parse_args(args):
         help='XML file to translate'
     )
     parser.add_argument(
+        '-s', '--jenkins-server',
+        help='Jenkins server to query'
+    )
+    parser.add_argument(
         '-n', '--name',
-        help='Name for this job'
+        help='Name of a job'
     )
     return parser.parse_args(args)
 
 def main():
     args = parse_args(sys.argv[1:])
 
-    if not args.filename:
-        log.critical('XML Filename (-f) must be set. Exiting...')
+    # Options:
+    # -f and -n
+    # -s and -n
+    # TODO: -s (without -n means "all jobs on the server")
+
+
+    # Choose either -f or -j ...
+    if not args.jenkins_server and not args.filename:
+        log.critical('Choose an XML file (-f) or Jenkins URL (-j).')
         exit(1)
 
-    if not args.name:
-        log.critical('Job name (-n) must be set. Exiting...')
+    # ... but not both -f and -j.
+    if args.jenkins_server and args.filename:
+        log.critical('Choose either an XML file (-f) or Jenkins URL (-j).')
         exit(1)
 
-    root = get_xml_root(args.filename)
-    print root_to_yaml(root, args.name)
+    # -f requires -n
+    if args.filename and not args.name:
+        log.critical('Choose a job name (-n) for the job in this file.')
+        exit(1)
+
+    # Args are ok. Proceed with writing output
+    try:
+        os.mkdir('output')
+    # We don't care if "output" dir already exists.
+    except OSError as exception:
+        if exception.errno != errno.EEXIST:
+            raise
+
+    if args.filename:
+        # Convert to YAML
+        root = get_xml_root(filename=args.filename)
+        yaml = root_to_yaml(root, args.name)
+        # write yaml string to file (job-name.yml)
+        yaml_filename = os.path.join('output', args.name + '.yml')
+        output_file = open(yaml_filename, 'w')
+        output_file.write(yaml)
+        output_file.close()
+
+    # -s requires -n
+    if args.jenkins_server:
+        # 'http://jenkins-calamari.front.sepia.ceph.com:8080'
+        server = jenkins.Jenkins(args.jenkins_server)
+        if args.name:
+            job_names = [args.name]
+        else:
+            job_names = []
+            for job in server.get_jobs():
+                job_names.append(job['name'])
+
+        # write YAML
+        for name in job_names:
+            log.info('looking up job "%s"' % name)
+            # Convert to YAML
+            root = get_xml_root(string=server.get_job_config(name))
+            log.info('converting job "%s" to YAML' % name)
+            yaml = root_to_yaml(root, name)
+            # write yaml string to file (job-name.yml)
+            yaml_filename = os.path.join('output', name + '.yml')
+            output_file = open(yaml_filename, 'w')
+            output_file.write(yaml)
+            output_file.close()

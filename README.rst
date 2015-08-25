@@ -24,13 +24,29 @@ You will now have a ``jjwrecker`` utility in your ``$PATH``.
 Usage
 -----
 
-Let's say you have an XML definition for "my-job". Here's how you convert that
-to YAML::
+Let's say you have an XML definition file for "my-job". Here's how you convert
+that to YAML::
 
-     jjwrecker -f path/to/my-job/config.xml -n 'my-job' | tee my-job.yaml
+     jjwrecker -f path/to/my-job/config.xml -n 'my-job'
 
-You can then commit ``my-job.yaml`` into your source control and use JJB to
-manage the Jenkins job onward.
+This will write ``my-job.yml`` in a directory named "``output``" in your
+current working directory. You can then commit ``my-job.yml`` into your source
+control and use JJB to manage the Jenkins job onward.
+
+In addition to operating on static XML files, jjwrecker also supports querying
+a live Jenkins server dynamically for a given job::
+
+     jjwrecker -s http://jenkins.example.com/ -n 'my-job'
+
+It will write ``output/my-job.yml`` as above.
+
+To make jjwrecker translate every job on the server, don't specify any job
+name::
+
+     jjwrecker -s http://jenkins.example.com/
+
+jjwrecker will iterate through all the jobs and write as ``.yml`` files in
+``output/``.
 
 
 License
