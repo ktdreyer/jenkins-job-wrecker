@@ -1,6 +1,9 @@
 Jenkins Job Wrecker
 -------------------
 
+.. image:: https://travis-ci.org/ktdreyer/jenkins-job-wrecker.svg?branch=master
+       :target: https://travis-ci.org/ktdreyer/jenkins-job-wrecker
+
 Translate Jenkins XML jobs to YAML. The YAML can then be fed into Jenkins Job
 Builder.
 
