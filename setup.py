@@ -45,6 +45,9 @@ setup(name="jenkins-job-wrecker",
             'jjwrecker = jenkins_job_wrecker.cli:main',
             ],
       },
-      tests_require=['pytest'],
+      tests_require=[
+          'pytest',
+          'jenkins-job-builder',
+     ],
       cmdclass = {'test': PyTest},
 )
