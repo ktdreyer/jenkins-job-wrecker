@@ -16,7 +16,6 @@ def handle_keepdependencies(top):
 
 # Handle "<properties>..."
 def handle_properties(top):
-    #return [['properties', [{'github': [{'url': 'foo'}]}]]]
     properties = []
     parameters = []
     for child in top:
