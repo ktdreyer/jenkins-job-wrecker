@@ -1,0 +1,126 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<matrix-project plugin="matrix-project@1.4">
+  <actions/>
+  <description>Build ice-setup as a package for Red Hat Ceph, non-Red Hat releases</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <com.coravy.hudson.plugins.github.GithubProjectProperty plugin="github@1.11.3">
+      <projectUrl>http://github.com/ceph/ice-tools/</projectUrl>
+    </com.coravy.hudson.plugins.github.GithubProjectProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>BRANCH</name>
+          <description></description>
+          <defaultValue>master</defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.3.5">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+        <url>git@github.com:ceph/ice-setup</url>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>$BRANCH</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+    <submoduleCfg class="list"/>
+    <extensions>
+      <hudson.plugins.git.extensions.impl.RelativeTargetDirectory>
+        <relativeTargetDir>ice-setup</relativeTargetDir>
+      </hudson.plugins.git.extensions.impl.RelativeTargetDirectory>
+    </extensions>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <axes>
+    <hudson.matrix.LabelExpAxis>
+      <name>Arch</name>
+      <values>
+        <string>x86_64</string>
+      </values>
+    </hudson.matrix.LabelExpAxis>
+    <hudson.matrix.LabelExpAxis>
+      <name>Dist</name>
+      <values>
+        <string>trusty</string>
+        <string>precise</string>
+        <string>centos</string>
+      </values>
+    </hudson.matrix.LabelExpAxis>
+  </axes>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>#/bin/bash -ex
+
+echo &quot;BRANCH: $BRANCH&quot;
+cd $WORKSPACE/ice-setup
+
+DEBIAN=0
+
+if [ $Dist = &apos;trusty&apos; -o $Dist = &apos;precise&apos; -o $Dist = &apos;wheezy&apos; ] ; then
+    DEBIAN=1
+fi
+
+if [ $DEBIAN = 1 ] ; then
+    dpkg-buildpackage -us -uc
+else
+    python ./setup.py sdist
+
+    RPMBUILD=$WORKSPACE/rpmbuild
+    mkdir -p $RPMBUILD/{SOURCES,SRPMS,SPECS,RPMS,BUILD}
+    cp -a dist/ice_setup*.tar.gz $RPMBUILD/SOURCES/.
+    cp -a ice_setup.spec $RPMBUILD/SPECS/.
+
+    cd $RPMBUILD
+    rpmbuild -ba --define &quot;_topdir $RPMBUILD&quot; --define &quot;_unpackaged_files_terminate_build 0&quot; SPECS/ice_setup.spec
+fi
+
+cd $WORKSPACE
+rm -rf $BRANCH
+mkdir $BRANCH
+
+if [ $DEBIAN = 1 ] ; then
+    mv *.deb *.dsc *.changes *.tar.gz $BRANCH
+else
+    find rpmbuild -name &apos;*.rpm&apos; -o -name &apos;*.srpm&apos; | xargs -i mv {} $BRANCH
+fi
+
+exit 0</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <hudson.tasks.ArtifactArchiver>
+      <artifacts>$BRANCH/*</artifacts>
+      <allowEmptyArchive>false</allowEmptyArchive>
+      <onlyIfSuccessful>false</onlyIfSuccessful>
+      <fingerprint>false</fingerprint>
+      <defaultExcludes>true</defaultExcludes>
+    </hudson.tasks.ArtifactArchiver>
+    <hudson.plugins.descriptionsetter.DescriptionSetterPublisher plugin="description-setter@1.10">
+      <regexp>^BRANCH: (\S+)</regexp>
+      <regexpForFailed></regexpForFailed>
+      <setForMatrix>false</setForMatrix>
+    </hudson.plugins.descriptionsetter.DescriptionSetterPublisher>
+  </publishers>
+  <buildWrappers>
+    <EnvInjectPasswordWrapper plugin="envinject@1.91.3">
+      <injectGlobalPasswords>false</injectGlobalPasswords>
+      <maskPasswordParameters>true</maskPasswordParameters>
+      <passwordEntries/>
+    </EnvInjectPasswordWrapper>
+  </buildWrappers>
+  <executionStrategy class="hudson.matrix.DefaultMatrixExecutionStrategyImpl">
+    <runSequentially>false</runSequentially>
+  </executionStrategy>
+</matrix-project>
