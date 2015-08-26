@@ -146,8 +146,10 @@ def main():
         # write YAML
         for name in job_names:
             log.info('looking up job "%s"' % name)
-            # Convert to YAML
-            root = get_xml_root(string=server.get_job_config(name))
+            # Get a job's XML
+            xml = server.get_job_config(name)
+            # Convert XML to YAML
+            root = get_xml_root(string=xml)
             log.info('converting job "%s" to YAML' % name)
             yaml = root_to_yaml(root, name)
             # write yaml string to file (job-name.yml)
