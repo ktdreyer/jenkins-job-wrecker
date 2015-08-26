@@ -278,6 +278,24 @@ def handle_executionstrategy(top):
 
     return [[ 'execution-strategy', strategy ]]
 
+# Handle "<logrotator>...</logrotator>"
+def handle_logrotator(top):
+    logrotate = {}
+    for child in top:
+
+        if child.tag == 'daysToKeep':
+            logrotate['daysToKeep'] = child.text
+        elif child.tag == 'numToKeep':
+            logrotate['numToKeep'] = child.text
+        elif child.tag == 'artifactDaysToKeep':
+            logrotate['artifactDaysToKeep'] = child.text
+        elif child.tag == 'artifactNumToKeep':
+            logrotate['artifactNumToKeep'] = child.text
+        else:
+            raise NotImplementedError("cannot handle XML %s" % child.tag)
+
+    return [[ 'logrotate', logrotate ]]
+
 
 def parse_args():
     parser = argparse.ArgumentParser(
