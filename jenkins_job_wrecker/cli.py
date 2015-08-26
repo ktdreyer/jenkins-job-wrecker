@@ -88,10 +88,18 @@ def parse_args(args):
         '-n', '--name',
         help='Name of a job'
     )
+    parser.add_argument(
+        '-v', '--verbose',
+        action='store_true', default=None,
+        help='show more output on the console'
+    )
     return parser.parse_args(args)
 
 def main():
     args = parse_args(sys.argv[1:])
+
+    if args.verbose:
+        log.setLevel(logging.DEBUG)
 
     # Options:
     # -f and -n
@@ -148,6 +156,7 @@ def main():
             log.info('looking up job "%s"' % name)
             # Get a job's XML
             xml = server.get_job_config(name)
+            log.debug(xml)
             # Convert XML to YAML
             root = get_xml_root(string=xml)
             log.info('converting job "%s" to YAML' % name)
