@@ -120,6 +120,9 @@ def handle_scm(top):
             for setting in child[0]:
                 git[setting.tag] = setting.text
 
+        elif child.tag == 'gitTool':
+            git['git-tool'] = child.text
+
         elif child.tag == 'branches':
             if len(list(child)) != 1:
                # expected hudson.plugins.git.BranchSpec
