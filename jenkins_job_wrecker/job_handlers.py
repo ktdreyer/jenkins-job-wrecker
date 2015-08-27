@@ -136,6 +136,74 @@ def handle_scm(top):
                 # for other build choosers
                 raise NotImplementedError("%s build chooser" % child.attrib['class'])
 
+        elif child.tag == 'disableSubmodules':
+            # 'false' is the default and needs no explict YAML.
+            if child.text == 'true':
+                raise NotImplementedError("TODO: %s" % child.tag)
+
+        elif child.tag == 'recursiveSubmodules':
+            # 'false' is the default and needs no explict YAML.
+            if child.text == 'true':
+                raise NotImplementedError("TODO: %s" % child.tag)
+
+        elif child.tag == 'authorOrCommitter':
+            # 'false' is the default and needs no explict YAML.
+            if child.text == 'true':
+                git['use-author'] = True
+
+        elif child.tag == 'useShallowClone':
+            # 'false' is the default and needs no explict YAML.
+            if child.text == 'true':
+                git['shallow-clone'] = True
+
+        elif child.tag == 'ignoreNotifyCommit':
+            # 'false' is the default and needs no explict YAML.
+            if child.text == 'true':
+                git['ignore-notify'] = True
+
+        elif child.tag == 'wipeOutWorkspace':
+            git['wipe-workspace'] = (child.text == 'true')
+
+        elif child.tag == 'skipTag':
+            # 'false' is the default and needs no explict YAML.
+            if child.text == 'true':
+                git['skip-tag'] = True
+
+        elif child.tag == 'pruneBranches':
+            # 'false' is the default and needs no explict YAML.
+            if child.text == 'true':
+                git['prune'] = True
+
+        elif child.tag == 'remotePoll':
+            # 'false' is the default and needs no explict YAML.
+            if child.text == 'true':
+                git['fastpoll'] = True
+
+        elif child.tag == 'relativeTargetDir':
+            # If it's empty, we're good
+            if child.text or len(list(child)) > 0:
+               raise NotImplementedError(child.tag)
+
+        elif child.tag == 'reference':
+            # If it's empty, we're good
+            if child.text or len(list(child)) > 0:
+               raise NotImplementedError(child.tag)
+
+        elif child.tag == 'gitConfigName':
+            # If it's empty, we're good
+            if child.text or len(list(child)) > 0:
+               raise NotImplementedError(child.tag)
+
+        elif child.tag == 'gitConfigEmail':
+            # If it's empty, we're good
+            if child.text or len(list(child)) > 0:
+               raise NotImplementedError(child.tag)
+
+        elif child.tag == 'scmName':
+            # If it's empty, we're good
+            if child.text or len(list(child)) > 0:
+               raise NotImplementedError(child.tag)
+
         elif child.tag == 'branches':
             if len(list(child)) != 1:
                # expected hudson.plugins.git.BranchSpec
