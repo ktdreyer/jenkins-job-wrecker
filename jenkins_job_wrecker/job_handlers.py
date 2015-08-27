@@ -17,7 +17,9 @@ def handle_description(top):
 
 # Handle "<keepDependencies>false</keepDependencies>"
 def handle_keepdependencies(top):
-    return [['keep-dependencies', top.text == 'true']]
+    # JJB cannot handle any other value than false, here.
+    # There is no corresponding YAML option.
+    return None
 
 # Handle "<properties>..."
 def handle_properties(top):
