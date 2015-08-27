@@ -6,13 +6,13 @@ import tempfile
 from subprocess import call
 
 fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures')
-ice_setup_xml_file = os.path.join(fixtures_path, 'ice-setup.xml')
 
 class TestJJB(object):
 
-    def test_sanity(self):
-        root = get_xml_root(filename=ice_setup_xml_file)
-        yaml = root_to_yaml(root, 'ice-setup')
+    def run_jjb(self, name):
+        filename = os.path.join(fixtures_path, name + '.xml')
+        root = get_xml_root(filename=filename)
+        yaml = root_to_yaml(root, name)
 
         # Run this wrecker YAML thru JJB.
 	# XXX: shelling out with call() sucks; use JJB's API instead
@@ -21,3 +21,6 @@ class TestJJB(object):
         temp.flush()
         assert call(["jenkins-jobs", 'test', temp.name]) == 0
         temp.close()
+
+    def test_ice_setup(self):
+        self.run_jjb('ice-setup')
