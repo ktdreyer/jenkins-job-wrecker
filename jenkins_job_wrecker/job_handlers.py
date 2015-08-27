@@ -214,7 +214,40 @@ def handle_builders(top):
     builders = []
     for child in top:
 
-        if child.tag == 'hudson.tasks.Shell':
+        if child.tag == 'hudson.plugins.copyartifact.CopyArtifact':
+            copyartifact = {}
+            selectdict = {
+                'StatusBuildSelector': 'last-successful',
+                'LastCompletedBuildSelector': 'last-completed',
+                'SpecificBuildSelector': 'specific-build',
+                'SavedBuildSelector': 'last-saved',
+                'TriggeredBuildSelector': 'upstream-build',
+                'PermalinkBuildSelector': 'permalink',
+                'WorkspaceSelector': 'workspace-latest',
+                'ParameterizedBuildSelector': 'build-param'}
+            for copy_element in child:
+                if copy_element.tag == 'project':
+                    copyartifact[copy_element.tag] = copy_element.text
+                elif copy_element.tag == 'filter':
+                    copyartifact[copy_element.tag] = copy_element.text
+                elif copy_element.tag == 'target':
+                    copyartifact[copy_element.tag] = copy_element.text
+                elif copy_element.tag == 'excludes':
+                    copyartifact['exclude-pattern'] = copy_element.text
+                elif copy_element.tag == 'selector':
+                    select = copy_element.attrib['class']
+                    select = select.replace('hudson.plugins.copyartifact.', '')
+                    copyartifact['which-build'] = selectdict[select]
+                elif copy_element.tag == 'flatten':
+                    copyartifact[copy_element.tag] = (copy_element.text == 'true')
+                elif copy_element.tag == 'doNotFingerprintArtifacts':
+                    # Not yet implemented in JJB
+                    continue
+                else:
+                    raise NotImplementedError("cannot handle XML %s" % shell_element.tag)
+            builders.append({'copyartifact': copyartifact})
+
+        elif child.tag == 'hudson.tasks.Shell':
             for shell_element in child:
                 # Assumption: there's only one <command> in this
                 # <hudson.tasks.Shell>
