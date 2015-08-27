@@ -182,8 +182,22 @@ def handle_blockbuildwhenupstreambuilding(top):
     return [['block-upstream', top.text == 'true']]
     
 def handle_triggers(top):
-    if len(list(top)) > 0:
-       raise NotImplementedError('TODO: implement handling here')
+    triggers = []
+
+    for child in top:
+        if child.tag == 'hudson.triggers.SCMTrigger':
+            pollscm = {}
+            for setting in child:
+                if setting.tag == 'spec':
+                    pollscm['cron'] = setting.text
+                elif setting.tag == 'ignorePostCommitHooks':
+                    pollscm['ignore-post-commit-hooks'] = (setting.text == 'true')
+                else:
+                    raise NotImplementedError("cannot handle scm trigger setting %s" % setting.tag)
+            triggers.append(pollscm)
+        else:
+            raise NotImplementedError("cannot handle XML %s" % child.tag)
+    return [['triggers', triggers]]
 
 def handle_concurrentbuild(top):
     return [['concurrent', top.text == 'true']]
