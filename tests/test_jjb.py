@@ -24,3 +24,6 @@ class TestJJB(object):
 
     def test_ice_setup(self):
         self.run_jjb('ice-setup')
+
+    def test_calamari_clients(self):
+        self.run_jjb('calamari-clients')

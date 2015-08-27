@@ -1,0 +1,123 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<matrix-project plugin="matrix-project@1.4">
+  <actions/>
+  <description>Build all the non-precise distros (which really means &quot;package them&quot;)</description>
+  <logRotator class="hudson.tasks.LogRotator">
+    <daysToKeep>-1</daysToKeep>
+    <numToKeep>-1</numToKeep>
+    <artifactDaysToKeep>-1</artifactDaysToKeep>
+    <artifactNumToKeep>-1</artifactNumToKeep>
+  </logRotator>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <com.coravy.hudson.plugins.github.GithubProjectProperty plugin="github@1.11.3">
+      <projectUrl>https://github.com/example/romana/</projectUrl>
+    </com.coravy.hudson.plugins.github.GithubProjectProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>BRANCH</name>
+          <description></description>
+          <defaultValue>master</defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="org.jenkinsci.plugins.multiplescms.MultiSCM" plugin="multiple-scms@0.4">
+    <scms>
+      <hudson.plugins.git.GitSCM plugin="git@2.3.5">
+        <configVersion>2</configVersion>
+        <userRemoteConfigs>
+          <hudson.plugins.git.UserRemoteConfig>
+            <url>git@github.com:example/romana.git</url>
+          </hudson.plugins.git.UserRemoteConfig>
+        </userRemoteConfigs>
+        <branches>
+          <hudson.plugins.git.BranchSpec>
+            <name>$BRANCH</name>
+          </hudson.plugins.git.BranchSpec>
+        </branches>
+        <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+        <submoduleCfg class="list"/>
+        <extensions>
+          <hudson.plugins.git.extensions.impl.RelativeTargetDirectory>
+            <relativeTargetDir>calamari-clients</relativeTargetDir>
+          </hudson.plugins.git.extensions.impl.RelativeTargetDirectory>
+        </extensions>
+      </hudson.plugins.git.GitSCM>
+    </scms>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <axes>
+    <hudson.matrix.LabelExpAxis>
+      <name>arch</name>
+      <values>
+        <string>x86_64</string>
+      </values>
+    </hudson.matrix.LabelExpAxis>
+    <hudson.matrix.LabelExpAxis>
+      <name>dist</name>
+      <values>
+        <string>centos</string>
+        <string>rhel7</string>
+        <string>trusty</string>
+      </values>
+    </hudson.matrix.LabelExpAxis>
+    <hudson.matrix.LabelAxis>
+      <name>label</name>
+      <values>
+        <string>calamari-buildslave</string>
+      </values>
+    </hudson.matrix.LabelAxis>
+  </axes>
+  <combinationFilter>dist != &quot;wheezy&quot;</combinationFilter>
+  <builders>
+    <hudson.plugins.copyartifact.CopyArtifact plugin="copyartifact@1.35.1">
+      <project>calamari-clients-precise</project>
+      <filter>$BRANCH/calamari-clients-build-output.tar.gz</filter>
+      <target>$WORKSPACE</target>
+      <excludes></excludes>
+      <selector class="hudson.plugins.copyartifact.StatusBuildSelector"/>
+      <flatten>true</flatten>
+      <doNotFingerprintArtifacts>false</doNotFingerprintArtifacts>
+    </hudson.plugins.copyartifact.CopyArtifact>
+    <hudson.tasks.Shell>
+      <command>#!/bin/bash
+set -ex
+echo &quot;BRANCH: ${BRANCH} DIST: $dist ARCH: $arch WORKSPACE: $WORKSPACE  PWD: ${PWD}&quot;
+ls $WORKSPACE
+rm -f $WORKSPACE/*{rpm,deb}
+ls $WORKSPACE
+
+sudo -E salt-call --local --file-root=$WORKSPACE/calamari-clients/vagrant/salt/roots state.highstate | \
+   multitee 0-1,4 4&gt;/tmp/${BUILD_TAG}.out
+errs=$(sed --regexp-extended -n &apos;s/^Failed:[[:space:]]+([[:digit:]]+)/\1/p&apos; &lt; /tmp/${BUILD_TAG}.out)
+rm /tmp/${BUILD_TAG}.out
+if [ $errs != 0 ] ; then echo &quot;$errs HIGHSTATE ERRORS, BUILD FAILED&quot;; exit 1; fi
+
+rm -rf $WORKSPACE/$BRANCH
+mkdir $WORKSPACE/$BRANCH
+find $WORKSPACE -maxdepth 1 -name &apos;*.deb&apos; -print0 -o -name &apos;*.rpm&apos; -print0 \
+  -o -name &apos;calamari-clients.build.output.tar.gz&apos; -print0 | xargs --verbose -0 -I&apos;{}&apos; mv &apos;{}&apos; $WORKSPACE/$BRANCH
+</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <hudson.tasks.ArtifactArchiver>
+      <artifacts>$BRANCH/*</artifacts>
+      <allowEmptyArchive>false</allowEmptyArchive>
+      <onlyIfSuccessful>false</onlyIfSuccessful>
+      <fingerprint>false</fingerprint>
+      <defaultExcludes>true</defaultExcludes>
+    </hudson.tasks.ArtifactArchiver>
+  </publishers>
+  <buildWrappers/>
+  <executionStrategy class="hudson.matrix.DefaultMatrixExecutionStrategyImpl">
+    <runSequentially>false</runSequentially>
+  </executionStrategy>
+</matrix-project>
