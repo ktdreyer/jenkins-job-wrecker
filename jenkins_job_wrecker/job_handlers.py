@@ -405,6 +405,10 @@ def handle_assignednode(top):
 def handle_displayname(top):
     return [['display-name', top.text]]
 
+# Handle "<quietPeriod>5</quietPeriod>"
+def handle_quietperiod(top):
+    return [['quiet-period', top.text]]
+
 
 def parse_args():
     parser = argparse.ArgumentParser(
