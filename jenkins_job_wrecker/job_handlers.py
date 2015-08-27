@@ -299,6 +299,8 @@ def handle_publishers(top):
                     setter['regexp-for-failed'] = element.text
                 elif element.tag == 'setForMatrix':
                     setter['set-for-matrix'] = (element.text == 'true')
+                elif element.tag == 'description':
+                    setter['description'] = element.text
                 else:
                     raise NotImplementedError("cannot handle XML %s" % element.tag)
 
