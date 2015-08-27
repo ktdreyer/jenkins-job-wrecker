@@ -374,6 +374,10 @@ def handle_logrotator(top):
 def handle_combinationfilter(top):
     return [['combination-filter', top.text]]
 
+# Handle "<assignedNode>server.example.com</assignedNode>"
+def handle_assignednode(top):
+    return [['node', top.text]]
+
 
 def parse_args():
     parser = argparse.ArgumentParser(
