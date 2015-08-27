@@ -1,3 +1,8 @@
+import logging
+
+logging.basicConfig(level=logging.INFO)
+log = logging.getLogger(__name__)
+
 # Handle "<actions/>"
 def handle_actions(top):
     # Nothing to do if it's empty.
@@ -83,8 +88,17 @@ def handle_parameters_property(top):
 
 # Handle "<scm>..."
 def handle_scm(top):
-    # TODO: ensure that this is a hudson.plugins.git.GitSCM
+    if 'class' in top.attrib and top.attrib['class'] == 'org.jenkinsci.plugins.multiplescms.MultiSCM':
+        scms = []
+        for scm in top[0]:
+             scms.append(handle_scm(scm)[0])
+        return scms
+
+    if top.tag != 'hudson.plugins.git.GitSCM' and top.attrib['class'] != 'hudson.plugins.git.GitSCM':
+       raise NotImplementedError("%s scm not supported" % top.attrib['class'])
+
     git = {}
+
     for child in top:
 
         if child.tag == 'configVersion':
