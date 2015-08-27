@@ -304,6 +304,17 @@ def handle_publishers(top):
 
             publishers.append({'description-setter': setter})
 
+        elif child.tag == 'hudson.tasks.Fingerprinter':
+            fingerprint = {}
+            for element in child:
+                if element.tag == 'targets':
+                    fingerprint['files'] = element.text
+                elif element.tag == 'recordBuildArtifacts':
+                    fingerprint['record-artifacts'] = (element.text == 'true')
+                else:
+                    raise NotImplementedError("cannot handle XML %s" % element.tag)
+            publishers.append({'fingerprint': fingerprint})
+
         else:
             raise NotImplementedError("cannot handle XML %s" % child.tag)
 
