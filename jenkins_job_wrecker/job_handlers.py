@@ -180,9 +180,9 @@ def handle_scm(top):
                 git['fastpoll'] = True
 
         elif child.tag == 'relativeTargetDir':
-            # If it's empty, we're good
-            if child.text or len(list(child)) > 0:
-               raise NotImplementedError(child.tag)
+            # If it's empty, no explicit 'basedir' YAML needed.
+            if child.text:
+                git['basedir'] = child.text
 
         elif child.tag == 'reference':
             # If it's empty, we're good
