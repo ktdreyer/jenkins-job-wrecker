@@ -39,10 +39,13 @@ def root_to_yaml(root, name):
 
     job['name'] = name
 
-    if root.tag != 'matrix-project':
-       raise NotImplementedError, 'We only support matrix-type jobs'
+    # "project-type:" YAML
+    project_types = {
+        'matrix-project': 'matrix'}
+    if root.tag not in project_types:
+       raise NotImplementedError('Cannot handle "%s"-type projects' % root.tag)
+    job['project-type'] = project_types[root.tag]
 
-    job['project-type'] = 'matrix'
 
     # Handle each top-level XML element with custom "handle_*" functions in
     # job_handlers.py.

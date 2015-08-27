@@ -88,11 +88,15 @@ def handle_parameters_property(top):
 
 # Handle "<scm>..."
 def handle_scm(top):
-    if 'class' in top.attrib and top.attrib['class'] == 'org.jenkinsci.plugins.multiplescms.MultiSCM':
-        scms = []
-        for scm in top[0]:
-             scms.append(handle_scm(scm)[0])
-        return scms
+    if 'class' in top.attrib:
+        if top.attrib['class'] == 'hudson.scm.NullSCM':
+            return None
+
+        if top.attrib['class'] == 'org.jenkinsci.plugins.multiplescms.MultiSCM':
+            scms = []
+            for scm in top[0]:
+                 scms.append(handle_scm(scm)[0])
+            return scms
 
     if top.tag != 'hudson.plugins.git.GitSCM' and top.attrib['class'] != 'hudson.plugins.git.GitSCM':
        raise NotImplementedError("%s scm not supported" % top.attrib['class'])
