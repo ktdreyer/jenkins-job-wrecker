@@ -322,6 +322,10 @@ def handle_logrotator(top):
 
     return [[ 'logrotate', logrotate ]]
 
+# Handle "<combinationFilter>a != &quot;b&quot;</combinationFilter>"
+def handle_combinationfilter(top):
+    return [['combination-filter', top.text]]
+
 
 def parse_args():
     parser = argparse.ArgumentParser(
