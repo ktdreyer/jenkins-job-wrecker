@@ -128,6 +128,14 @@ def handle_scm(top):
                 users = child.text.split()
                 git['excluded-users'] = users
 
+        elif child.tag == 'buildChooser':
+            if child.attrib['class'] == 'hudson.plugins.git.util.DefaultBuildChooser':
+                continue
+            else:
+                # see JJB's jenkins_jobs/modules/scm.py
+                # for other build choosers
+                raise NotImplementedError("%s build chooser" % child.attrib['class'])
+
         elif child.tag == 'branches':
             if len(list(child)) != 1:
                # expected hudson.plugins.git.BranchSpec
