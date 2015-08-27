@@ -45,7 +45,7 @@ name::
 
      jjwrecker -s http://jenkins.example.com/
 
-jjwrecker will iterate through all the jobs and write as ``.yml`` files in
+jjwrecker will iterate through all the jobs and create ``.yml`` files in
 ``output/``.
 
 
