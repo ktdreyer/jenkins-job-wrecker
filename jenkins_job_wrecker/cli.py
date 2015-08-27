@@ -41,6 +41,7 @@ def root_to_yaml(root, name):
 
     # "project-type:" YAML
     project_types = {
+        'project': 'freestyle',
         'matrix-project': 'matrix'}
     if root.tag not in project_types:
        raise NotImplementedError('Cannot handle "%s"-type projects' % root.tag)
