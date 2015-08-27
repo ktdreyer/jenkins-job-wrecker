@@ -145,6 +145,9 @@ def handle_scm(top):
                raise NotImplementedError("%s not supported with %i children" % (child.tag, len(list(child)) ))
 
         elif child.tag == 'extensions':
+            if len(list(child)) == 0:
+               # This is just an empty <extensions/>. We can skip it.
+               continue
             if len(list(child)) != 1:
                # hudson.plugins.git.extensions.impl.RelativeTargetDirectory
                raise NotImplementedError("%s not supported with %i children" % (child.tag, len(list(child)) ))
