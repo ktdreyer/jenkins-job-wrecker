@@ -280,7 +280,7 @@ def handle_publishers(top):
                 elif element.tag == 'fingerprint':
                     archive['fingerprint'] = (element.text == 'true')
                 elif element.tag == 'onlyIfSuccessful':
-                    # only-if-success is not yet available in JJB 1.2.0
+                    # only-if-success first available in JJB 1.3.0
                     archive['only-if-success'] = (element.text == 'true')
                 elif element.tag == 'defaultExcludes':
                     # default-excludes is not yet available in JJB master
