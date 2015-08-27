@@ -123,6 +123,11 @@ def handle_scm(top):
         elif child.tag == 'gitTool':
             git['git-tool'] = child.text
 
+        elif child.tag == 'excludedUsers':
+            if child.text:
+                users = child.text.split()
+                git['excluded-users'] = users
+
         elif child.tag == 'branches':
             if len(list(child)) != 1:
                # expected hudson.plugins.git.BranchSpec
@@ -406,5 +411,12 @@ def handle_displayname(top):
     return [['display-name', top.text]]
 
 # Handle "<quietPeriod>5</quietPeriod>"
+def handle_quietperiod(top):
+    return [['quiet-period', top.text]]
+
+# Handle "<scmCheckoutRetryCount>8</scmCheckoutRetryCount>"
+def handle_scmcheckoutretrycount(top):
+    return [['retry-count', top.text]]
+
 def handle_quietperiod(top):
     return [['quiet-period', top.text]]
