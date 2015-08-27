@@ -408,35 +408,3 @@ def handle_displayname(top):
 # Handle "<quietPeriod>5</quietPeriod>"
 def handle_quietperiod(top):
     return [['quiet-period', top.text]]
-
-
-def parse_args():
-    parser = argparse.ArgumentParser(
-        description='Input XML, output YAML.',
-        epilog=textwrap.dedent('''
-        Examples:
-        jjwrecker -f ice-tools.xml
-        '''),
-        formatter_class=ArgumentDefaultsHelpFormatter)
-    parser.add_argument(
-        '-f', '--filename',
-        help='XML file to translate'
-    )
-    return parser.parse_args()
-
-def main():
-    global args
-    args = parse_args()
-
-    if not args.filename:
-        log.critical('XML Filename (-f) must be set. Exiting...')
-        exit(1)
-
-    root = get_root(args.filename)
-    print print_job(root)
-
-# Given an XML filename, parse it with xml.etree.ElementTree and return the XML
-# tree root.
-def get_root(filename):
-    tree = ET.parse(filename)
-    return tree.getroot()
