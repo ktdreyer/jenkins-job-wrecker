@@ -116,12 +116,9 @@ def handle_scm(top):
             if len(list(child)) != 1:
                # expected "hudson.plugins.git.UserRemoteConfig" tag
                raise NotImplementedError("%s not supported with %i children" % (child.tag, len(list(child)) ))
-            if len(list(child[0])) != 1:
-               # expected "url" tag
-               raise NotImplementedError("%s not supported with %i children" % (child.tag, len(list(child)) ))
-            if child[0][0].tag != 'url':
-               raise NotImplementedError("%s XML not supported" % child[0][0].tag)
-            git['url'] = child[0][0].text
+
+            for setting in child[0]:
+                git[setting.tag] = setting.text
 
         elif child.tag == 'branches':
             if len(list(child)) != 1:
