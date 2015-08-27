@@ -401,6 +401,10 @@ def handle_combinationfilter(top):
 def handle_assignednode(top):
     return [['node', top.text]]
 
+# Handle "<displayName>my cool job</displayName>"
+def handle_displayname(top):
+    return [['display-name', top.text]]
+
 
 def parse_args():
     parser = argparse.ArgumentParser(
