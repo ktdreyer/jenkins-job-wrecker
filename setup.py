@@ -39,6 +39,7 @@ setup(name="jenkins-job-wrecker",
       packages=find_packages(),
       install_requires=[
           'pyyaml',
+          'python-jenkins',
       ],
       entry_points = {
         'console_scripts': [
