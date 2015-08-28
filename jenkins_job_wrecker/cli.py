@@ -111,12 +111,12 @@ def main():
     # TODO: -s (without -n means "all jobs on the server")
 
 
-    # Choose either -f or -j ...
+    # Choose either -f or -s ...
     if not args.jenkins_server and not args.filename:
         log.critical('Choose an XML file (-f) or Jenkins URL (-s).')
         exit(1)
 
-    # ... but not both -f and -j.
+    # ... but not both -f and -s.
     if args.jenkins_server and args.filename:
         log.critical('Choose either an XML file (-f) or Jenkins URL (-s).')
         exit(1)
