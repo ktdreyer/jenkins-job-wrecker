@@ -113,12 +113,12 @@ def main():
 
     # Choose either -f or -j ...
     if not args.jenkins_server and not args.filename:
-        log.critical('Choose an XML file (-f) or Jenkins URL (-j).')
+        log.critical('Choose an XML file (-f) or Jenkins URL (-s).')
         exit(1)
 
     # ... but not both -f and -j.
     if args.jenkins_server and args.filename:
-        log.critical('Choose either an XML file (-f) or Jenkins URL (-j).')
+        log.critical('Choose either an XML file (-f) or Jenkins URL (-s).')
         exit(1)
 
     # -f requires -n
