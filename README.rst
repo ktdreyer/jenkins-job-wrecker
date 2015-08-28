@@ -23,7 +23,6 @@ You will now have a ``jjwrecker`` utility in your ``$PATH``.
 
 Usage
 -----
-
 Let's say you have an XML definition file for "my-job". Here's how you convert
 that to YAML::
 
@@ -47,6 +46,13 @@ name::
 
 jjwrecker will iterate through all the jobs and create ``.yml`` files in
 ``output/``.
+
+It is required to determine a username and password to connect to the remote
+Jenkins server. These credentials can be set as normal environment variables,
+exported before hand or right before running the CLI tool::
+
+     JJW_USERNAME=alfredo JJW_PASSWORD=go-tamaulipas jjwrecker -s
+     http://jenkins.ceph.com
 
 
 License
