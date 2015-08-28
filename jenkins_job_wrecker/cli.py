@@ -111,14 +111,14 @@ def main():
     # TODO: -s (without -n means "all jobs on the server")
 
 
-    # Choose either -f or -j ...
+    # Choose either -f or -s ...
     if not args.jenkins_server and not args.filename:
-        log.critical('Choose an XML file (-f) or Jenkins URL (-j).')
+        log.critical('Choose an XML file (-f) or Jenkins URL (-s).')
         exit(1)
 
-    # ... but not both -f and -j.
+    # ... but not both -f and -s.
     if args.jenkins_server and args.filename:
-        log.critical('Choose either an XML file (-f) or Jenkins URL (-j).')
+        log.critical('Choose either an XML file (-f) or Jenkins URL (-s).')
         exit(1)
 
     # -f requires -n
@@ -147,7 +147,15 @@ def main():
     # -s requires -n
     if args.jenkins_server:
         # 'http://jenkins-calamari.front.sepia.ceph.com:8080'
-        server = jenkins.Jenkins(args.jenkins_server)
+        # TODO: make these configurable. Allow environment variables for now
+        username = None
+        password = None
+        try:
+            username = os.environ['JJW_USERNAME']
+            password = os.environ['JJW_PASSWORD']
+        except KeyError as err:
+            log.warning('%s was not set as an environment variable to connect to Jenkins' % err)
+        server = jenkins.Jenkins(args.jenkins_server, username=username, password=password)
         if args.name:
             job_names = [args.name]
         else:
