@@ -99,7 +99,7 @@ def parse_args(args):
     )
     parser.add_argument(
         '-i', '--ignore',
-        action='store_true', default=None,
+        nargs='*',
         help='Ignore some jobs in conversion.'
     )
     parser.add_argument(
@@ -133,11 +133,6 @@ def main():
     # -f requires -n
     if args.filename and not args.name:
         log.critical('Choose a job name (-n) for the job in this file.')
-        exit(1)
-
-    if args.ignore and args.name in args.ignore:
-        log.critical('Ignoring the job you are testing against is weird,'
-                     ' please rethink your decisions in life.')
         exit(1)
 
     # Args are ok. Proceed with writing output
@@ -181,8 +176,8 @@ def main():
             job_names = []
             for job in server.get_jobs():
 
-                if args.ignore and job in args.ignore:
-                    log.info('Ignoring [%s] as requesteed...' % job)
+                if job['name'] in args.ignore:
+                    log.info('Ignoring [%s] as requested...' % job)
                     continue
 
                 job_names.append(job['name'])

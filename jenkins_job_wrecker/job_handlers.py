@@ -241,6 +241,10 @@ def handle_scm(top):
                 raise NotImplementedError("%s not supported with %i children"
                                           % (child.tag, len(list(child))))
 
+        elif child.tag == 'browser':
+            if child.text or len(list(child)) > 0:
+                raise NotImplementedError(child.tag)
+
         elif child.tag == 'extensions':
 
             continue
@@ -380,7 +384,8 @@ def handle_builders(top):
                 'TriggeredBuildSelector': 'upstream-build',
                 'PermalinkBuildSelector': 'permalink',
                 'WorkspaceSelector': 'workspace-latest',
-                'ParameterizedBuildSelector': 'build-param'}
+                'ParameterizedBuildSelector': 'build-param',
+                'DownstreamBuildSelector': 'downstream-build'}
             for copy_element in child:
                 if copy_element.tag == 'project':
                     copyartifact[copy_element.tag] = copy_element.text
@@ -544,21 +549,21 @@ def handle_publishers(top):
             build_trigger = {}
 
             for element in child:
-                for a in element:
-                    if a.tag == 'hudson.plugins.parameterizedtrigger.BuildTriggerConfig':
-                        for b in a:
-                            if b.tag == 'projects':
-                                build_trigger['project'] = b.text
-                            elif b.tag == 'condition':
-                                build_trigger['condition'] = b.text
-                            elif b.tag == 'triggerWithNoParameters':
+                for sub in element:
+                    if sub.tag == 'hudson.plugins.parameterizedtrigger.BuildTriggerConfig':
+                        for config in sub:
+                            if config.tag == 'projects':
+                                build_trigger['project'] = config.text
+                            elif config.tag == 'condition':
+                                build_trigger['condition'] = config.text
+                            elif config.tag == 'triggerWithNoParameters':
                                 build_trigger['trigger-with-no-params'] = \
-                                    (b.text == 'true')
-                            elif b.tag == 'configs':
+                                    (config.text == 'true')
+                            elif config.tag == 'configs':
                                 pass
                             else:
                                 raise NotImplementedError("cannot handle "
-                                                          "XML %s" % b.tag)
+                                                          "XML %s" % config.tag)
 
             publishers.append({'trigger-parameterized-builds': build_trigger})
         else:
