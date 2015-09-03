@@ -17,19 +17,21 @@ log = logging.getLogger('jjwrecker')
 # (on the root logger)
 for handler in logging.getLogger().handlers:
     if isinstance(handler, logging.StreamHandler):
-        handler.setFormatter(logging.Formatter(fmt='%(name)s %(levelname)s: %(message)s'))
+        handler.setFormatter(logging.Formatter(fmt='%(name)s %(levelname)s: '
+                                                   '%(message)s'))
 
 
 # Given a file with XML, or a string of XML, parse it with
 # xml.etree.ElementTree and return the XML tree root.
 def get_xml_root(filename=False, string=False):
-    if filename == False and string == False:
+    if not filename and not string:
         raise TypeError('specify a filename or string argument')
     if filename:
         tree = ET.parse(filename)
         return tree.getroot()
     if string:
         return ET.fromstring(string)
+
 
 # Walk an XML ElementTree ("root"), and return a YAML string
 def root_to_yaml(root, name):
@@ -44,9 +46,8 @@ def root_to_yaml(root, name):
         'project': 'freestyle',
         'matrix-project': 'matrix'}
     if root.tag not in project_types:
-       raise NotImplementedError('Cannot handle "%s"-type projects' % root.tag)
+        raise NotImplementedError('Cannot handle "%s"-type projects' % root.tag)
     job['project-type'] = project_types[root.tag]
-
 
     # Handle each top-level XML element with custom "handle_*" functions in
     # job_handlers.py.
@@ -65,11 +66,12 @@ def root_to_yaml(root, name):
                 for setting in settings:
                     key, value = setting
                     job[key] = value
-        except Exception, e:
+        except Exception:
             print 'last called %s' % handler_name
             raise
 
     return dump(build, default_flow_style=False)
+
 
 # argparse foo
 def parse_args(args):
@@ -99,6 +101,7 @@ def parse_args(args):
     )
     return parser.parse_args(args)
 
+
 def main():
     args = parse_args(sys.argv[1:])
 
@@ -109,8 +112,6 @@ def main():
     # -f and -n
     # -s and -n
     # TODO: -s (without -n means "all jobs on the server")
-
-
     # Choose either -f or -s ...
     if not args.jenkins_server and not args.filename:
         log.critical('Choose an XML file (-f) or Jenkins URL (-s).')
