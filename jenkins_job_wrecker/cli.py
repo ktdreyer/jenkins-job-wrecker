@@ -62,10 +62,13 @@ def root_to_yaml(root, name):
             raise NotImplementedError("write a function for %s" % handler_name)
         try:
             settings = handler(child)
-            if settings is not None:
-                for setting in settings:
-                    key, value = setting
-                    job[key] = value
+
+            if not settings:
+                continue
+
+            for setting in settings:
+                key, value = setting
+                job[key] = value
         except Exception:
             print 'last called %s' % handler_name
             raise

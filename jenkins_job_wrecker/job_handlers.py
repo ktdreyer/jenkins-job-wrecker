@@ -220,18 +220,14 @@ def handle_scm(top):
                 raise NotImplementedError(child.tag)
 
         elif child.tag == 'branches':
-            if len(list(child)) != 1:
-                # expected hudson.plugins.git.BranchSpec
-                raise NotImplementedError("%s not supported with %i children"
-                                          % (child.tag, len(list(child))))
-            if len(list(child[0])) != 1:
-                # expected name
-                raise NotImplementedError("%s not supported with %i children"
-                                          % (child[0].tag, len(list(child[0]))))
             if child[0][0].tag != 'name':
                 raise NotImplementedError("%s XML not supported"
                                           % child[0][0].tag)
-            git['branches'] = child[0][0].text
+            branches = []
+            for item in child:
+                for branch in item:
+                    branches.append(branch.text)
+            git['branches'] = branches
 
         elif child.tag == 'doGenerateSubmoduleConfigurations':
             if len(list(child)) != 0:
@@ -246,7 +242,7 @@ def handle_scm(top):
                                           % (child.tag, len(list(child))))
 
         elif child.tag == 'extensions':
-            if len(list(child)) == 0:
+            if len(list(child)) == 0 or not list(child[0]):
                 # This is just an empty <extensions/>. We can skip it.
                 continue
             if len(list(child)) != 1:
@@ -254,6 +250,7 @@ def handle_scm(top):
                 raise NotImplementedError("%s not supported with %i children"
                                           % (child.tag, len(list(child))))
             if len(list(child[0])) != 1:
+                print list(child[0])
                 # expected relativeTargetDir
                 raise NotImplementedError("%s not supported with %i children"
                                           % (child[0].tag, len(list(child[0]))))
@@ -306,6 +303,23 @@ def handle_triggers(top):
                     raise NotImplementedError("cannot handle scm trigger "
                                               "setting %s" % setting.tag)
             triggers.append(pollscm)
+        elif child.tag == 'hudson.triggers.TimerTrigger':
+            timed_trigger = {}
+            timed_trigger['timed'] = child[0].text
+            triggers.append(timed_trigger)
+        elif child.tag == 'jenkins.triggers.ReverseBuildTrigger':
+            reverse = {}
+            for setting in child:
+                if setting.tag == 'upstreamProjects':
+                    reverse['jobs'] = setting.text
+                elif setting.tag == 'threshold':
+                    pass    # TODO
+                elif setting.tag == 'spec':
+                    pass    # TODO
+                else:
+                    raise NotImplementedError("cannot handle reverse trigger "
+                                              "setting %s" % setting.tag)
+            triggers.append(reverse)
         else:
             raise NotImplementedError("cannot handle XML %s" % child.tag)
     return [['triggers', triggers]]
@@ -459,6 +473,50 @@ def handle_publishers(top):
                                               "XML %s" % element.tag)
             publishers.append({'fingerprint': fingerprint})
 
+        elif child.tag == 'hudson.plugins.emailext.ExtendedEmailPublisher':
+            ext_email = {}
+            for element in child:
+                if element.tag == 'recipientList':
+                    ext_email['recipients'] = element.text
+
+                elif element.tag == 'replyTo':
+                    ext_email['reply-to'] = element.text
+
+                elif element.tag == 'contentType':
+                    ext_email['content-type'] = element.text
+
+                elif element.tag == 'defaultSubject':
+                    ext_email['subject'] = element.text
+
+                elif element.tag == 'defaultContent':
+                    ext_email['body'] = element.text
+
+                elif element.tag in ['attachBuildLog', 'compressBuildLog']:
+                    ext_email['attach-build-log'] = (element.text == 'true')
+
+                elif element.tag == 'attachmentsPattern':
+                    ext_email['attachment'] = element.text
+
+                elif element.tag in ['saveOutput', 'disabled']:
+                    pass
+
+                elif element.tag == 'preBuild':
+                    ext_email['pre-build'] = (element.text == 'true')
+
+                elif element.tag == 'presendScript':
+                    ext_email['presend-script'] = element.text
+
+                elif element.tag == 'sendTo':
+                    ext_email['send-to'] = element.text
+
+                elif element.tag == 'configuredTriggers':
+                    print "IGNORED configuredTriggers in email-ext"
+
+                else:
+                    raise NotImplementedError("cannot handle "
+                                              "XML %s" % element.tag)
+
+            publishers.append({'email-ext': ext_email})
         else:
             raise NotImplementedError("cannot handle XML %s" % child.tag)
 
@@ -484,7 +542,29 @@ def handle_buildwrappers(top):
                     raise NotImplementedError("cannot handle "
                                               "XML %s" % element.tag)
             wrappers.append({'inject': inject})
+
+        elif child.tag == 'hudson.plugins.build__timeout.BuildTimeoutWrapper':
+            pass
+
+        elif child.tag == 'hudson.plugins.ansicolor.AnsiColorBuildWrapper':
+            wrappers.append({'ansicolor': {'colormap': 'xterm'}})
+
+        elif child.tag == 'com.cloudbees.jenkins.plugins.sshagent.SSHAgentBuildWrapper':    # NOQA
+            ssh_agents = {}
+            for element in child:
+                if element.tag == 'credentialIds':
+                    ssh_agents['users'] = 'ADD MANUALLY'
+                elif element.tag == 'ignoreMissing':
+                    pass
+                else:
+                    raise NotImplementedError("cannot handle "
+                                              "XML %s" % element.tag)
+            wrappers.append({'ssh-agent-credentials': ssh_agents})
+
+        elif child.tag == 'org.jenkinsci.plugins.buildnamesetter.BuildNameSetter':  # NOQA
+            wrappers.append({'build-name': {'name': child[0].text}})
         else:
+            print child
             raise NotImplementedError("cannot handle XML %s" % child.tag)
     return [['wrappers', wrappers]]
 
@@ -543,3 +623,7 @@ def handle_quietperiod(top):
 # Handle "<scmCheckoutRetryCount>8</scmCheckoutRetryCount>"
 def handle_scmcheckoutretrycount(top):
     return [['retry-count', top.text]]
+
+
+def handle_customworkspace(top):
+    return [['workspace', top.text]]
