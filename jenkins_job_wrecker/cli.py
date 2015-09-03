@@ -98,6 +98,11 @@ def parse_args(args):
         help='Name of a job'
     )
     parser.add_argument(
+        '-i', '--ignore',
+        action='store_true', default=None,
+        help='Ignore some jobs in conversion.'
+    )
+    parser.add_argument(
         '-v', '--verbose',
         action='store_true', default=None,
         help='show more output on the console'
@@ -130,6 +135,11 @@ def main():
         log.critical('Choose a job name (-n) for the job in this file.')
         exit(1)
 
+    if args.name in args.ignore:
+        log.critical('Ignoring the job you are testing against is weird,'
+                     ' please rethink your decisions in life.')
+        exit(1)
+
     # Args are ok. Proceed with writing output
     try:
         os.mkdir('output')
@@ -158,13 +168,23 @@ def main():
             username = os.environ['JJW_USERNAME']
             password = os.environ['JJW_PASSWORD']
         except KeyError as err:
-            log.warning('%s was not set as an environment variable to connect to Jenkins' % err)
-        server = jenkins.Jenkins(args.jenkins_server, username=username, password=password)
+            log.warning('%s was not set as an environment variable to '
+                        'connect to Jenkins' % err)
+
+        server = jenkins.Jenkins(args.jenkins_server,
+                                 username=username,
+                                 password=password)
+
         if args.name:
             job_names = [args.name]
         else:
             job_names = []
             for job in server.get_jobs():
+
+                if job in args.ignore:
+                    log.info('Ignoring [%s] as requesteed...' % job)
+                    continue
+
                 job_names.append(job['name'])
 
         # write YAML
