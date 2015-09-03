@@ -242,6 +242,9 @@ def handle_scm(top):
                                           % (child.tag, len(list(child))))
 
         elif child.tag == 'extensions':
+
+            continue
+
             if len(list(child)) == 0 or not list(child[0]):
                 # This is just an empty <extensions/>. We can skip it.
                 continue
@@ -396,7 +399,11 @@ def handle_builders(top):
                         (copy_element.text == 'true')
                 elif copy_element.tag == 'doNotFingerprintArtifacts':
                     # Not yet implemented in JJB
+                    # ADD RAW XML
                     continue
+                elif copy_element.tag == 'optional':
+                    copyartifact[copy_element.tag] = \
+                        (copy_element.text == 'true')
                 else:
                     raise NotImplementedError("cannot handle "
                                               "XML %s" % copy_element.tag)
@@ -517,6 +524,43 @@ def handle_publishers(top):
                                               "XML %s" % element.tag)
 
             publishers.append({'email-ext': ext_email})
+
+        elif child.tag == 'hudson.tasks.junit.JUnitResultArchiver':
+            junit_publisher = {}
+            for element in child:
+                if element.tag == 'testResults':
+                    junit_publisher['results'] = element.text
+                elif element.tag == 'keepLongStdio':
+                    junit_publisher['keep-long-stdio'] = \
+                        (element.text == 'true')
+                elif element.tag == 'healthScaleFactor':
+                    junit_publisher['health-scale-factor'] = element.text
+                else:
+                    raise NotImplementedError("cannot handle "
+                                              "XML %s" % element.tag)
+            publishers.append({'junit': junit_publisher})
+
+        elif child.tag == 'hudson.plugins.parameterizedtrigger.BuildTrigger':
+            build_trigger = {}
+
+            for element in child:
+                for a in element:
+                    if a.tag == 'hudson.plugins.parameterizedtrigger.BuildTriggerConfig':
+                        for b in a:
+                            if b.tag == 'projects':
+                                build_trigger['project'] = b.text
+                            elif b.tag == 'condition':
+                                build_trigger['condition'] = b.text
+                            elif b.tag == 'triggerWithNoParameters':
+                                build_trigger['trigger-with-no-params'] = \
+                                    (b.text == 'true')
+                            elif b.tag == 'configs':
+                                pass
+                            else:
+                                raise NotImplementedError("cannot handle "
+                                                          "XML %s" % b.tag)
+
+            publishers.append({'trigger-parameterized-builds': build_trigger})
         else:
             raise NotImplementedError("cannot handle XML %s" % child.tag)
 
@@ -553,7 +597,10 @@ def handle_buildwrappers(top):
             ssh_agents = {}
             for element in child:
                 if element.tag == 'credentialIds':
-                    ssh_agents['users'] = 'ADD MANUALLY'
+                    keys = []
+                    for key in element:
+                        keys.append(key.text)
+                    ssh_agents['users'] = keys
                 elif element.tag == 'ignoreMissing':
                     pass
                 else:

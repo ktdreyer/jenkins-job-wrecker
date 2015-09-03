@@ -135,7 +135,7 @@ def main():
         log.critical('Choose a job name (-n) for the job in this file.')
         exit(1)
 
-    if args.name in args.ignore:
+    if args.ignore and args.name in args.ignore:
         log.critical('Ignoring the job you are testing against is weird,'
                      ' please rethink your decisions in life.')
         exit(1)
@@ -181,7 +181,7 @@ def main():
             job_names = []
             for job in server.get_jobs():
 
-                if job in args.ignore:
+                if args.ignore and job in args.ignore:
                     log.info('Ignoring [%s] as requesteed...' % job)
                     continue
 
