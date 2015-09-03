@@ -72,8 +72,11 @@ def handle_parameters_property(top):
                 parameter_type = 'string'
             elif parameterdef.tag == 'hudson.model.BooleanParameterDefinition':
                 parameter_type = 'bool'
+            elif parameterdef.tag == 'hudson.model.ChoiceParameterDefinition':
+                parameter_type = 'choice'
+                raise NotImplementedError(parameterdef.tag)
             else:
-                raise NotImplementedError(parameterdefs.tag)
+                raise NotImplementedError(parameterdef.tag)
 
             parameter_settings = {}
             for defsetting in parameterdef:
@@ -246,9 +249,6 @@ def handle_scm(top):
                 raise NotImplementedError(child.tag)
 
         elif child.tag == 'extensions':
-
-            continue
-
             if len(list(child)) == 0 or not list(child[0]):
                 # This is just an empty <extensions/>. We can skip it.
                 continue
@@ -327,6 +327,9 @@ def handle_triggers(top):
                     raise NotImplementedError("cannot handle reverse trigger "
                                               "setting %s" % setting.tag)
             triggers.append(reverse)
+        elif child.tag == 'com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.GerritTrigger':     # NOQA
+            # Skip for now
+            pass
         else:
             raise NotImplementedError("cannot handle XML %s" % child.tag)
     return [['triggers', triggers]]
@@ -550,7 +553,7 @@ def handle_publishers(top):
 
             for element in child:
                 for sub in element:
-                    if sub.tag == 'hudson.plugins.parameterizedtrigger.BuildTriggerConfig':
+                    if sub.tag == 'hudson.plugins.parameterizedtrigger.BuildTriggerConfig':     # NOQA
                         for config in sub:
                             if config.tag == 'projects':
                                 build_trigger['project'] = config.text
@@ -566,6 +569,32 @@ def handle_publishers(top):
                                                           "XML %s" % config.tag)
 
             publishers.append({'trigger-parameterized-builds': build_trigger})
+
+        elif child.tag == 'hudson.tasks.Mailer':
+            email_settings = {}
+            for element in child:
+
+                if element.tag == 'recipients':
+                    email_settings['recipients'] = element.text
+                elif element.tag == 'dontNotifyEveryUnstableBuild':
+                    email_settings['notify-every-unstable-build'] = \
+                        (element.text == 'true')
+                elif element.tag == 'sendToIndividuals':
+                    email_settings['send-to-individuals'] = \
+                        (element.text == 'true')
+                else:
+                    raise NotImplementedError("cannot handle "
+                                              "email %s" % element.tag)
+            publishers.append({'email': email_settings})
+
+        elif child.tag == 'org.jenkins__ci.plugins.flexible__publish.FlexiblePublisher':    # NOQA
+            raise NotImplementedError("cannot handle XML %s" % child.tag)
+
+        elif child.tag == 'hudson.plugins.s3.S3BucketPublisher':
+            raise NotImplementedError("cannot handle XML %s" % child.tag)
+        elif child.tag == 'hudson.plugins.robot.RobotPublisher':
+            raise NotImplementedError("cannot handle XML %s" % child.tag)
+
         else:
             raise NotImplementedError("cannot handle XML %s" % child.tag)
 
