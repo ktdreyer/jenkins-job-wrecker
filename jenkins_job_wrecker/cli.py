@@ -17,19 +17,21 @@ log = logging.getLogger('jjwrecker')
 # (on the root logger)
 for handler in logging.getLogger().handlers:
     if isinstance(handler, logging.StreamHandler):
-        handler.setFormatter(logging.Formatter(fmt='%(name)s %(levelname)s: %(message)s'))
+        handler.setFormatter(logging.Formatter(fmt='%(name)s %(levelname)s: '
+                                                   '%(message)s'))
 
 
 # Given a file with XML, or a string of XML, parse it with
 # xml.etree.ElementTree and return the XML tree root.
 def get_xml_root(filename=False, string=False):
-    if filename == False and string == False:
+    if not filename and not string:
         raise TypeError('specify a filename or string argument')
     if filename:
         tree = ET.parse(filename)
         return tree.getroot()
     if string:
         return ET.fromstring(string)
+
 
 # Walk an XML ElementTree ("root"), and return a YAML string
 def root_to_yaml(root, name):
@@ -44,9 +46,8 @@ def root_to_yaml(root, name):
         'project': 'freestyle',
         'matrix-project': 'matrix'}
     if root.tag not in project_types:
-       raise NotImplementedError('Cannot handle "%s"-type projects' % root.tag)
+        raise NotImplementedError('Cannot handle "%s"-type projects' % root.tag)
     job['project-type'] = project_types[root.tag]
-
 
     # Handle each top-level XML element with custom "handle_*" functions in
     # job_handlers.py.
@@ -61,15 +62,19 @@ def root_to_yaml(root, name):
             raise NotImplementedError("write a function for %s" % handler_name)
         try:
             settings = handler(child)
-            if settings is not None:
-                for setting in settings:
-                    key, value = setting
-                    job[key] = value
-        except Exception, e:
+
+            if not settings:
+                continue
+
+            for setting in settings:
+                key, value = setting
+                job[key] = value
+        except Exception:
             print 'last called %s' % handler_name
             raise
 
     return dump(build, default_flow_style=False)
+
 
 # argparse foo
 def parse_args(args):
@@ -93,11 +98,17 @@ def parse_args(args):
         help='Name of a job'
     )
     parser.add_argument(
+        '-i', '--ignore',
+        nargs='*',
+        help='Ignore some jobs in conversion.'
+    )
+    parser.add_argument(
         '-v', '--verbose',
         action='store_true', default=None,
         help='show more output on the console'
     )
     return parser.parse_args(args)
+
 
 def main():
     args = parse_args(sys.argv[1:])
@@ -109,8 +120,6 @@ def main():
     # -f and -n
     # -s and -n
     # TODO: -s (without -n means "all jobs on the server")
-
-
     # Choose either -f or -s ...
     if not args.jenkins_server and not args.filename:
         log.critical('Choose an XML file (-f) or Jenkins URL (-s).')
@@ -154,13 +163,23 @@ def main():
             username = os.environ['JJW_USERNAME']
             password = os.environ['JJW_PASSWORD']
         except KeyError as err:
-            log.warning('%s was not set as an environment variable to connect to Jenkins' % err)
-        server = jenkins.Jenkins(args.jenkins_server, username=username, password=password)
+            log.warning('%s was not set as an environment variable to '
+                        'connect to Jenkins' % err)
+
+        server = jenkins.Jenkins(args.jenkins_server,
+                                 username=username,
+                                 password=password)
+
         if args.name:
             job_names = [args.name]
         else:
             job_names = []
             for job in server.get_jobs():
+
+                if job['name'] in args.ignore:
+                    log.info('Ignoring [%s] as requested...' % job)
+                    continue
+
                 job_names.append(job['name'])
 
         # write YAML
