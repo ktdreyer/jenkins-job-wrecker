@@ -646,6 +646,10 @@ def handle_buildwrappers(top):
 
         elif child.tag == 'org.jenkinsci.plugins.buildnamesetter.BuildNameSetter':  # NOQA
             wrappers.append({'build-name': {'name': child[0].text}})
+
+        elif child.tag == 'hudson.plugins.timestamper.TimestamperBuildWrapper':
+            wrappers.append('timestamps')
+
         else:
             print child
             raise NotImplementedError("cannot handle XML %s" % child.tag)
