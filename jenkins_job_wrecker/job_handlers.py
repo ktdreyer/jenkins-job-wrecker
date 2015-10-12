@@ -453,6 +453,8 @@ def handle_publishers(top):
                 elif element.tag == 'defaultExcludes':
                     # default-excludes is not yet available in JJB master
                     archive['default-excludes'] = (element.text == 'true')
+                elif element.tag == 'latestOnly':
+                    archive['latest-only'] = (element.text == 'true')
                 else:
                     raise NotImplementedError("cannot handle "
                                               "XML %s" % element.tag)
