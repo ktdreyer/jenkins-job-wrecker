@@ -623,6 +623,20 @@ def handle_buildwrappers(top):
                                               "XML %s" % element.tag)
             wrappers.append({'inject': inject})
 
+        elif child.tag == 'EnvInjectBuildWrapper':
+            build_inject = {}
+            for element in child:
+                if element.tag == 'info':
+                    for subelement in element:
+                        if subelement.tag == 'propertiesFilePath':
+                            build_inject['properties-file'] = subelement.text
+                        if subelement.tag == 'loadFilesFromMaster':
+                            pass
+                else:
+                    raise NotImplementedError("cannot handle "
+                                              "XML %s" % element.tag)
+            wrappers.append({'inject': build_inject})
+
         elif child.tag == 'hudson.plugins.build__timeout.BuildTimeoutWrapper':
             pass
 
