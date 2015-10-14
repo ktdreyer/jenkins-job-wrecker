@@ -676,6 +676,40 @@ def handle_buildwrappers(top):
         elif child.tag == 'hudson.plugins.timestamper.TimestamperBuildWrapper':
             wrappers.append('timestamps')
 
+        elif child.tag == 'hudson.plugins.ws__cleanup.PreBuildCleanup':
+            preclean = {}
+            preclean_patterns = {'include': '', 'exclude': ''}
+            for element in child:
+                if element.tag == 'deleteDirs':
+                    preclean['dirmatch'] = (element.text == 'true')
+                elif element.tag == 'patterns':
+                    for subelement in element:
+                        if subelement.tag != 'hudson.plugins.ws__cleanup.Pattern':
+                            raise NotImplementedError("cannot handle "
+                                                      "XML %s" % subelement.tag)
+                        if subelement.find('type') is not None and subelement.find('pattern') is not None:
+                            rule_type = subelement.find('type').text.lower()
+                            rule_patt = subelement.find('pattern').text
+                            preclean_patterns[rule_type] = rule_patt
+                elif element.tag == 'cleanupParameter':
+                    # JJB does not seem to support this. Ignored.
+                    pass
+                elif element.tag == 'externalDelete':
+                    # JJB does not seem to support this. Ignored.
+                    pass
+                else:
+                    raise NotImplementedError("cannot handle "
+                                              "XML %s" % subelement.tag)
+
+            for rule in preclean_patterns:
+                if len(preclean_patterns[rule]) > 0:
+                    preclean[rule] = preclean_patterns[rule]
+
+            if len(preclean) > 0:
+                wrappers.append({'workspace-cleanup': preclean})
+            else:
+                wrappers.append('workspace-cleanup')
+
         else:
             print child
             raise NotImplementedError("cannot handle XML %s" % child.tag)
