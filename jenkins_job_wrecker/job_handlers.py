@@ -739,6 +739,34 @@ def handle_buildwrappers(top):
             else:
                 wrappers.append('workspace-cleanup')
 
+        elif child.tag == 'org.jenkinsci.plugins.xvfb.XvfbBuildWrapper':
+            xvfb = {}
+            for element in child:
+                if element.tag == 'installationName':
+                    xvfb['installation-name'] = element.text
+                if element.tag == 'autoDisplayName':
+                    xvfb['auto-display-name'] = (element.text == 'true')
+                if element.tag == 'displayName':
+                    xvfb['display-name'] = element.text
+                if element.tag == 'assignedLabels':
+                    xvfb['assigned-labels'] = element.text
+                if element.tag == 'parallelBuild':
+                    xvfb['parallel-build'] = (element.text == 'true')
+                if element.tag == 'timeout':
+                    xvfb['timeout'] = element.text
+                if element.tag == 'screen':
+                    xvfb['screen'] = element.text
+                if element.tag == 'displayNameOffset':
+                    xvfb['display-name-offset'] = element.text
+                if element.tag == 'additionalOptions':
+                    xvfb['additional-options'] = element.text
+                if element.tag == 'debug':
+                    xvfb['debug'] = (element.text == 'true')
+                if element.tag == 'shutdownWithBuild':
+                    xvfb['shutdown-with-build'] = (element.text == 'true')
+
+            wrappers.append({'xvfb': xvfb})
+
         else:
             print child
             raise NotImplementedError("cannot handle XML %s" % child.tag)
