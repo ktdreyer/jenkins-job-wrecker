@@ -453,6 +453,8 @@ def handle_publishers(top):
                 elif element.tag == 'defaultExcludes':
                     # default-excludes is not yet available in JJB master
                     archive['default-excludes'] = (element.text == 'true')
+                elif element.tag == 'latestOnly':
+                    archive['latest-only'] = (element.text == 'true')
                 else:
                     raise NotImplementedError("cannot handle "
                                               "XML %s" % element.tag)
@@ -621,6 +623,20 @@ def handle_buildwrappers(top):
                                               "XML %s" % element.tag)
             wrappers.append({'inject': inject})
 
+        elif child.tag == 'EnvInjectBuildWrapper':
+            build_inject = {}
+            for element in child:
+                if element.tag == 'info':
+                    for subelement in element:
+                        if subelement.tag == 'propertiesFilePath':
+                            build_inject['properties-file'] = subelement.text
+                        if subelement.tag == 'loadFilesFromMaster':
+                            pass
+                else:
+                    raise NotImplementedError("cannot handle "
+                                              "XML %s" % element.tag)
+            wrappers.append({'inject': build_inject})
+
         elif child.tag == 'hudson.plugins.build__timeout.BuildTimeoutWrapper':
             pass
 
@@ -644,6 +660,10 @@ def handle_buildwrappers(top):
 
         elif child.tag == 'org.jenkinsci.plugins.buildnamesetter.BuildNameSetter':  # NOQA
             wrappers.append({'build-name': {'name': child[0].text}})
+
+        elif child.tag == 'hudson.plugins.timestamper.TimestamperBuildWrapper':
+            wrappers.append('timestamps')
+
         else:
             print child
             raise NotImplementedError("cannot handle XML %s" % child.tag)
