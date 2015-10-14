@@ -18,6 +18,7 @@ Installing
 The module is not yet on pypi, so just install it directly from GitHub::
 
      virtualenv venv
+     . venv/bin/activate
      git clone https://github.com/ktdreyer/jenkins-job-wrecker.git
      python setup.py develop
 
