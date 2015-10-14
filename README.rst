@@ -15,7 +15,11 @@ allows you to convert your Jenkins jobs to JJB quickly and accurately.
 Installing
 ----------
 
-The module is not yet on pypi, so just install it directly from GitHub::
+You can install a released version from PyPI::
+
+     pip install jenkins-job-wrecker
+
+Or, if you want to hack on it, install it directly from GitHub::
 
      virtualenv venv
      . venv/bin/activate
