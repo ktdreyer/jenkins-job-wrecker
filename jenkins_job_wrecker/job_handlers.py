@@ -688,6 +688,9 @@ def handle_executionstrategy(top):
 
         if child.tag == 'runSequentially':
             strategy['run-sequentially'] = (child.text == 'true')
+        elif child.tag == 'sorter':
+            # Is there anything but NOOP?
+            pass
         else:
             raise NotImplementedError("cannot handle XML %s" % child.tag)
 
