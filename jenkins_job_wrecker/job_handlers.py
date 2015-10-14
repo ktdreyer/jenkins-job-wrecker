@@ -601,6 +601,35 @@ def handle_publishers(top):
                                               "email %s" % element.tag)
             publishers.append({'email': email_settings})
 
+        elif child.tag == 'htmlpublisher.HtmlPublisher':
+            html_publisher = {}
+            element = child[0]
+            if element.tag != 'reportTargets':
+                raise NotImplementedError("Cannot handle XML %s" % element.tag)
+            for subelement in element:
+                if subelement.tag != 'htmlpublisher.HtmlPublisherTarget':
+                    raise NotImplementedError("Cannot handle XML %s" % element.tag)
+                for config in subelement:
+                    if config.tag == 'reportName':
+                        html_publisher['name'] = config.text
+                    if config.tag == 'reportDir':
+                        html_publisher['dir'] = config.text
+                    if config.tag == 'reportFiles':
+                        html_publisher['files'] = config.text
+                    if config.tag == 'keepAll':
+                        html_publisher['keep-all'] = (config.text == 'true')
+                    if config.tag == 'allowMissing':
+                        html_publisher['allow-missing'] = (config.text == 'true')
+                    if config.tag == 'alwaysLinkToLastBuild':
+                        html_publisher['link-to-last-build'] = (config.text == 'true')
+                    if config.tag == 'wrapperName':
+                        # Apparently, older versions leakded this wrapper name
+                        # to the job configuration.
+                        pass
+
+            if len(html_publisher) > 0:
+                publishers.append({'html-publisher': html_publisher})
+
         elif child.tag == 'org.jenkins__ci.plugins.flexible__publish.FlexiblePublisher':    # NOQA
             raise NotImplementedError("cannot handle XML %s" % child.tag)
 
