@@ -68,7 +68,10 @@ def root_to_yaml(root, name):
 
             for setting in settings:
                 key, value = setting
-                job[key] = value
+                if key in job:
+                    job[key].append(value[0])
+                else:
+                    job[key] = value
         except Exception:
             print 'last called %s' % handler_name
             raise
