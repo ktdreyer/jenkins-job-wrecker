@@ -368,7 +368,7 @@ def handle_triggers(top):
                 else:
                     raise NotImplementedError("cannot handle scm trigger "
                                               "setting %s" % setting.tag)
-            triggers.append(pollscm)
+            triggers.append({'pollscm': pollscm})
         elif child.tag == 'hudson.triggers.TimerTrigger':
             timed_trigger = {}
             timed_trigger['timed'] = child[0].text
