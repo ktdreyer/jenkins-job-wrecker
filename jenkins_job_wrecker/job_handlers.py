@@ -105,6 +105,8 @@ def handle_parameters_property(top):
 
 # Handle "<scm>..."
 def handle_scm(top):
+    scm_ret = {}
+
     if 'class' in top.attrib:
         if top.attrib['class'] == 'hudson.scm.NullSCM':
             return None
@@ -115,10 +117,66 @@ def handle_scm(top):
                 scms.append(handle_scm(scm)[0])
             return scms
 
-    if top.tag != 'hudson.plugins.git.GitSCM' and \
-            top.attrib['class'] != 'hudson.plugins.git.GitSCM':
+    if top.tag == 'hudson.plugins.git.GitSCM' or \
+            ('class' in top.attrib and top.attrib['class'] == 'hudson.plugins.git.GitSCM'):
+        git = handle_scm_git(top)
+        scm_ret = {'git': git}
+    elif top.tag == 'hudson.plugins.mercurial.MercurialSCM' or \
+            ('class' in top.attrib and top.attrib['class'] == 'hudson.plugins.mercurial.MercurialSCM'):
+        hg = handle_scm_hg(top)
+        scm_ret = {'hg': hg}
+    else:
         raise NotImplementedError("%s scm not supported" % top.attrib['class'])
 
+    return [['scm', [scm_ret]]]
+
+def handle_scm_hg(top):
+    hg = {}
+
+    for child in top:
+        if child.tag == 'source':
+            hg['url'] = child.text
+        elif child.tag == 'credentialsId':
+            hg['credentials-id'] = child.text
+        elif child.tag == 'revisionType':
+            hg['revision-type'] = child.text.lower()
+        elif child.tag == 'revision':
+            hg['revision'] = child.text
+        elif child.tag == 'modules':
+            pass
+        elif child.tag == 'clean':
+            hg['clean'] = (child.text == 'true')
+        elif child.tag == 'subdir':
+            hg['subdir'] = child.text
+        elif child.tag == 'disableChangeLog':
+            hg['disable-changelog'] = (child.text == 'true')
+        elif child.tag == 'browser' and 'class' in child.attrib:
+            browser_class = child.attrib['class']
+            if browser_class == 'hudson.plugins.mercurial.browser.BitBucket':
+                hg['browser'] = 'bitbucketweb'
+            elif browser_class == 'hudson.plugins.mercurial.browser.FishEye':
+                hg['browser'] = 'fisheye'
+            elif browser_class == 'hudson.plugins.mercurial.browser.GoogleCode':
+                hg['browser'] = 'googlecode'
+            elif browser_class == 'hudson.plugins.mercurial.browser.HgWeb':
+                hg['browser'] = 'hgweb'
+            elif browser_class == 'hudson.plugins.mercurial.browser.Kallithea':
+                # Not supported by JJB
+                raise NotImplementedError("%s is not yet supported by jenkins-job-builder." %
+                                          browser_class)
+            elif browser_class == 'hudson.plugins.mercurial.browser.KilnHG':
+                hg['browser'] = 'kilnhg'
+            elif browser_class == 'hudson.plugins.mercurial.browser.RhodeCode':
+                hg['browser'] = 'rhodecode'
+            elif browser_class == 'hudson.plugins.mercurial.browser.RhodeCodeLegacy':
+                hg['browser'] = 'rhodecode-pre-1.2'
+
+            if child.find('url') is not None:
+                hg['browser-url'] = child.find('url').text
+
+    return hg
+
+def handle_scm_git(top):
     git = {}
 
     for child in top:
@@ -268,7 +326,8 @@ def handle_scm(top):
 
         else:
             raise NotImplementedError("cannot handle XML %s" % child.tag)
-    return [['scm', [{'git': git}]]]
+
+    return git
 
 
 # Handle "<canRoam>true</canRoam>"
