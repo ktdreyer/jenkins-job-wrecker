@@ -367,6 +367,18 @@ def handle_axes(top):
                     axis['values'] = values
             axes.append({'axis': axis})
 
+        elif child.tag == 'hudson.matrix.TextAxis':
+            axis = {'type': 'user-defined'}
+            for axis_element in child:
+                if axis_element.tag == 'name':
+                    axis['name'] = axis_element.text
+                if axis_element.tag == 'values':
+                    values = []
+                    for value_element in axis_element:
+                        values.append(value_element.text)
+                    axis['values'] = values
+            axes.append({'axis': axis})
+
         else:
             raise NotImplementedError("cannot handle XML %s" % child.tag)
 
@@ -589,6 +601,35 @@ def handle_publishers(top):
                                               "email %s" % element.tag)
             publishers.append({'email': email_settings})
 
+        elif child.tag == 'htmlpublisher.HtmlPublisher':
+            html_publisher = {}
+            element = child[0]
+            if element.tag != 'reportTargets':
+                raise NotImplementedError("Cannot handle XML %s" % element.tag)
+            for subelement in element:
+                if subelement.tag != 'htmlpublisher.HtmlPublisherTarget':
+                    raise NotImplementedError("Cannot handle XML %s" % element.tag)
+                for config in subelement:
+                    if config.tag == 'reportName':
+                        html_publisher['name'] = config.text
+                    if config.tag == 'reportDir':
+                        html_publisher['dir'] = config.text
+                    if config.tag == 'reportFiles':
+                        html_publisher['files'] = config.text
+                    if config.tag == 'keepAll':
+                        html_publisher['keep-all'] = (config.text == 'true')
+                    if config.tag == 'allowMissing':
+                        html_publisher['allow-missing'] = (config.text == 'true')
+                    if config.tag == 'alwaysLinkToLastBuild':
+                        html_publisher['link-to-last-build'] = (config.text == 'true')
+                    if config.tag == 'wrapperName':
+                        # Apparently, older versions leakded this wrapper name
+                        # to the job configuration.
+                        pass
+
+            if len(html_publisher) > 0:
+                publishers.append({'html-publisher': html_publisher})
+
         elif child.tag == 'org.jenkins__ci.plugins.flexible__publish.FlexiblePublisher':    # NOQA
             raise NotImplementedError("cannot handle XML %s" % child.tag)
 
@@ -664,6 +705,68 @@ def handle_buildwrappers(top):
         elif child.tag == 'hudson.plugins.timestamper.TimestamperBuildWrapper':
             wrappers.append('timestamps')
 
+        elif child.tag == 'hudson.plugins.ws__cleanup.PreBuildCleanup':
+            preclean = {}
+            preclean_patterns = {'include': '', 'exclude': ''}
+            for element in child:
+                if element.tag == 'deleteDirs':
+                    preclean['dirmatch'] = (element.text == 'true')
+                elif element.tag == 'patterns':
+                    for subelement in element:
+                        if subelement.tag != 'hudson.plugins.ws__cleanup.Pattern':
+                            raise NotImplementedError("cannot handle "
+                                                      "XML %s" % subelement.tag)
+                        if subelement.find('type') is not None and subelement.find('pattern') is not None:
+                            rule_type = subelement.find('type').text.lower()
+                            rule_patt = subelement.find('pattern').text
+                            preclean_patterns[rule_type] = rule_patt
+                elif element.tag == 'cleanupParameter':
+                    # JJB does not seem to support this. Ignored.
+                    pass
+                elif element.tag == 'externalDelete':
+                    # JJB does not seem to support this. Ignored.
+                    pass
+                else:
+                    raise NotImplementedError("cannot handle "
+                                              "XML %s" % subelement.tag)
+
+            for rule in preclean_patterns:
+                if len(preclean_patterns[rule]) > 0:
+                    preclean[rule] = preclean_patterns[rule]
+
+            if len(preclean) > 0:
+                wrappers.append({'workspace-cleanup': preclean})
+            else:
+                wrappers.append('workspace-cleanup')
+
+        elif child.tag == 'org.jenkinsci.plugins.xvfb.XvfbBuildWrapper':
+            xvfb = {}
+            for element in child:
+                if element.tag == 'installationName':
+                    xvfb['installation-name'] = element.text
+                if element.tag == 'autoDisplayName':
+                    xvfb['auto-display-name'] = (element.text == 'true')
+                if element.tag == 'displayName':
+                    xvfb['display-name'] = element.text
+                if element.tag == 'assignedLabels':
+                    xvfb['assigned-labels'] = element.text
+                if element.tag == 'parallelBuild':
+                    xvfb['parallel-build'] = (element.text == 'true')
+                if element.tag == 'timeout':
+                    xvfb['timeout'] = element.text
+                if element.tag == 'screen':
+                    xvfb['screen'] = element.text
+                if element.tag == 'displayNameOffset':
+                    xvfb['display-name-offset'] = element.text
+                if element.tag == 'additionalOptions':
+                    xvfb['additional-options'] = element.text
+                if element.tag == 'debug':
+                    xvfb['debug'] = (element.text == 'true')
+                if element.tag == 'shutdownWithBuild':
+                    xvfb['shutdown-with-build'] = (element.text == 'true')
+
+            wrappers.append({'xvfb': xvfb})
+
         else:
             print child
             raise NotImplementedError("cannot handle XML %s" % child.tag)
@@ -676,6 +779,9 @@ def handle_executionstrategy(top):
 
         if child.tag == 'runSequentially':
             strategy['run-sequentially'] = (child.text == 'true')
+        elif child.tag == 'sorter':
+            # Is there anything but NOOP?
+            pass
         else:
             raise NotImplementedError("cannot handle XML %s" % child.tag)
 
