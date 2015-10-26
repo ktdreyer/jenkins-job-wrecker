@@ -245,8 +245,8 @@ def handle_scm(top):
                                           % (child.tag, len(list(child))))
 
         elif child.tag == 'browser':
-            if child.text or len(list(child)) > 0:
-                raise NotImplementedError(child.tag)
+            # XXX: blunt hammer: just use the "auto" browser for everything.
+            git['browser'] = 'auto'
 
         elif child.tag == 'extensions':
             if len(list(child)) == 0 or not list(child[0]):
