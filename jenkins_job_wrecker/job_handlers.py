@@ -643,6 +643,8 @@ def handle_publishers(top):
             raise NotImplementedError("cannot handle XML %s" % child.tag)
         elif child.tag == 'hudson.plugins.robot.RobotPublisher':
             raise NotImplementedError("cannot handle XML %s" % child.tag)
+        elif child.tag == 'jenkins.plugins.publish__over__ssh.BapSshPublisherPlugin':
+            raise NotImplementedError("cannot handle XML %s" % child.tag)
 
         else:
             raise NotImplementedError("cannot handle XML %s" % child.tag)
