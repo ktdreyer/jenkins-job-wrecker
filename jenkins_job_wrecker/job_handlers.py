@@ -249,22 +249,28 @@ def handle_scm(top):
             git['browser'] = 'auto'
 
         elif child.tag == 'extensions':
-            if len(list(child)) == 0 or not list(child[0]):
-                # This is just an empty <extensions/>. We can skip it.
-                continue
-            if len(list(child)) != 1:
+            for extension in child:
                 # hudson.plugins.git.extensions.impl.RelativeTargetDirectory
-                raise NotImplementedError("%s not supported with %i children"
-                                          % (child.tag, len(list(child))))
-            if len(list(child[0])) != 1:
-                print list(child[0])
-                # expected relativeTargetDir
-                raise NotImplementedError("%s not supported with %i children"
-                                          % (child[0].tag, len(list(child[0]))))
-            if child[0][0].tag != 'relativeTargetDir':
-                raise NotImplementedError("%s XML not supported"
-                                          % child[0][0].tag)
-            git['basedir'] = child[0][0].text
+                if extension.tag == 'hudson.plugins.git.extensions.impl.RelativeTargetDirectory':
+                    if len(list(extension)) != 1:
+                        # expected <relativeTargetDir>
+                        raise NotImplementedError("%s not supported with %i children" % (extension.tag, len(list(extension))))
+                    if extension[0].tag != 'relativeTargetDir':
+                        raise NotImplementedError("%s XML not supported" % extension[0].tag)
+                    git['basedir'] = extension[0].text
+                elif extension.tag == 'hudson.plugins.git.extensions.impl.CheckoutOption':
+                    if len(list(extension)) != 1:
+                        # expected <timeout>
+                        raise NotImplementedError("%s not supported with %i children" % (extension.tag, len(list(extension))))
+                    if extension[0].tag != 'timeout':
+                        raise NotImplementedError("%s XML not supported" % child[0][0].tag)
+                    git['timeout'] = extension[0].text
+                elif extension.tag == 'hudson.plugins.git.extensions.impl.WipeWorkspace':
+                    if len(list(extension)) != 0:
+                        raise NotImplementedError("%s not supported with %i children" % (extension.tag, len(list(extension))))
+                    git['wipe-workspace'] = True
+                else:
+                    raise NotImplementedError("%s not supported" % child.tag)
 
         else:
             raise NotImplementedError("cannot handle XML %s" % child.tag)
