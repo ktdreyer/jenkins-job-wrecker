@@ -43,6 +43,17 @@ def handle_properties(top):
         elif child.tag == 'com.sonyericsson.rebuild.RebuildSettings':
             # latest version of JJB (1.3.0 at the moment) doesn't support this.
             continue
+
+        #Throttling
+        elif child.tag == 'hudson.plugins.throttleconcurrents.ThrottleJobProperty':
+            throttleproperty = handle_throttle_property(child)
+            properties.append(throttleproperty)
+
+        # Slack
+        elif child.tag == 'jenkins.plugins.slack.SlackNotifier_-SlackJobProperty':
+            slackproperty = handle_slack_property(child)
+            properties.append(slackproperty)
+
         # A property we don't know about
         else:
             print "cannot handle XML %s" % child.tag
@@ -74,7 +85,6 @@ def handle_parameters_property(top):
                 parameter_type = 'bool'
             elif parameterdef.tag == 'hudson.model.ChoiceParameterDefinition':
                 parameter_type = 'choice'
-                raise NotImplementedError(parameterdef.tag)
             else:
                 raise NotImplementedError(parameterdef.tag)
 
@@ -95,12 +105,71 @@ def handle_parameters_property(top):
                     value = True
                 elif defsetting.text == 'false':
                     value = False
+                # Get all the choices
+                elif parameter_type == 'choice':
+                    choices = []
+                    for child in defsetting:
+                        if(child.attrib['class'] == 'string-array'):
+                            for element in child:
+                                choices.append(element.text)
+                        else:
+                            raise NotImplementedError(child.attrib['class'])
+                    value = choices
                 # Assume that PyYAML will handle everything else correctly
                 else:
                     value = defsetting.text
                 parameter_settings[key] = value
             parameters.append({parameter_type: parameter_settings})
     return parameters
+
+def handle_throttle_property(top):
+    throttle_ret = {}
+    for child in top:
+        if child.tag == 'maxConcurrentPerNode':
+            throttle_ret['max-per-node'] = child.text
+        elif child.tag == 'maxConcurrentTotal':
+            throttle_ret['max-total'] = child.text
+        elif child.tag == 'throttleOption':
+            throttle_ret['option'] = child.text
+        elif child.tag == 'throttleEnabled':
+            throttle_ret['enabled'] = get_bool(child.text)
+        else:
+            raise NotImplementedError("cannot handle XML %s" % child.tag)
+    return {'throttle':throttle_ret}
+
+def handle_slack_property(top):
+    slack_ret = {}
+    notifications = {
+        "notifySuccess":"notify-success",
+        "notifyAborted":"notify-aborted",
+        "notifyNotBuilt":"notify-not-built",
+        "notifyUnstable":"notify-unstable",
+        "notifyFailure":"notify-failure",
+        "notifyBackToNormal":"notify-back-to-normal",
+        "notifyRepeatedFailure":"notify-repeated-failure"
+    }
+    for child in top:
+        if child.tag == 'teamDomain':
+            slack_ret['team-domain'] = child.text
+        elif child.tag == 'token':
+            slack_ret['token'] = child.text
+        elif child.tag == 'room':
+            slack_ret['room'] = child.text
+        elif child.tag == 'includeTestSummary':
+            slack_ret['include-test-summary'] = (child.text == 'true')
+        elif child.tag == 'showCommitList':
+            slack_ret['show-commit-list'] = (child.text == 'true')
+        elif child.tag == 'includeCustomMessage':
+            slack_ret['include-custom-message'] = (child.text == 'true')
+        elif child.tag == 'customMessage':
+            slack_ret['custom-message'] = child.text
+        elif child.tag == 'startNotification':
+            slack_ret['start-notification'] = (child.text == 'true')
+        elif child.tag in notifications:
+            slack_ret[notifications[child.tag]] = (child.text == 'true')
+        else:
+            raise NotImplementedError("cannot handle XML %s" % child.tag)
+    return {'slack':slack_ret}
 
 
 # Handle "<scm>..."
@@ -327,6 +396,8 @@ def handle_scm_git(top):
                     if len(list(extension)) != 0:
                         raise NotImplementedError("%s not supported with %i children" % (extension.tag, len(list(extension))))
                     git['wipe-workspace'] = True
+                elif extension.tag == 'hudson.plugins.git.extensions.impl.LocalBranch':
+                    git['local-branch'] = extension[0].text
                 else:
                     raise NotImplementedError("%s not supported" % child.tag)
 
@@ -495,20 +566,45 @@ def handle_builders(top):
             builders.append({'copyartifact': copyartifact})
 
         elif child.tag == 'hudson.tasks.Shell':
-            for shell_element in child:
-                # Assumption: there's only one <command> in this
-                # <hudson.tasks.Shell>
-                if shell_element.tag == 'command':
-                    shell = shell_element.text
-                else:
-                    raise NotImplementedError("cannot handle "
-                                              "XML %s" % shell_element.tag)
+            shell = handle_commands(child)
             builders.append({'shell': shell})
+
+        elif child.tag == 'hudson.tasks.BatchFile':
+            batch = handle_commands(child)
+            builders.append({'batch':batch})
+
+        elif child.tag == 'hudson.tasks.Maven':
+            maven = {}
+            for maven_element in child:
+                if maven_element.tag == 'targets':
+                    maven['goals'] = maven_element.text
+                elif maven_element.tag == 'mavenName':
+                    maven['name'] = maven_element.text
+                elif maven_element.tag == 'usePrivateRepository':
+                    maven['private-repository'] = (maven_element.text == 'true')
+                elif maven_element.tag == 'settings':
+                    maven['settings'] = maven_element.attrib['class']
+                elif maven_element.tag == 'globalSettings':
+                    maven['global-settings'] = maven_element.attrib['class']
+                else:
+                    continue
+            builders.append({'maven-target':maven})
 
         else:
             raise NotImplementedError("cannot handle XML %s" % child.tag)
 
     return [['builders', builders]]
+
+def handle_commands(element):
+    for shell_element in element:
+        # Assumption: there's only one <command> in this
+        # <hudson.tasks.Shell>
+        if shell_element.tag == 'command':
+            shell = ''+shell_element.text+''
+        else:
+            raise NotImplementedError("cannot handle "
+                                      "XML %s" % shell_element.tag)
+    return shell
 
 
 def handle_publishers(top):
@@ -695,6 +791,24 @@ def handle_publishers(top):
             if len(html_publisher) > 0:
                 publishers.append({'html-publisher': html_publisher})
 
+
+        elif child.tag == 'org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder':
+            groovy = {}
+            for groovy_element in child:
+                if groovy_element.tag == 'groovyScript':
+                    groovy['script'] = groovy_element.text
+                elif groovy_element.tag == 'classpath':
+                    classpaths = []
+                    for child1 in groovy_element:
+                        for child2 in child1:
+                            if child2.tag == 'path':
+                                classpaths.append(child2.text)
+                    groovy['classpath'] = classpaths;
+                else:
+                    continue
+                    raise NotImplementedError("cannot handle groovy-postbuild elements")
+            publishers.append({'groovy-postbuild':groovy})
+
         elif child.tag == 'org.jenkins__ci.plugins.flexible__publish.FlexiblePublisher':    # NOQA
             raise NotImplementedError("cannot handle XML %s" % child.tag)
 
@@ -834,6 +948,9 @@ def handle_buildwrappers(top):
 
             wrappers.append({'xvfb': xvfb})
 
+        elif child.tag == 'com.michelin.cio.hudson.plugins.maskpasswords.MaskPasswordsBuildWrapper':
+            wrappers.append('mask-passwords')
+
         else:
             print child
             raise NotImplementedError("cannot handle XML %s" % child.tag)
@@ -901,3 +1018,6 @@ def handle_scmcheckoutretrycount(top):
 
 def handle_customworkspace(top):
     return [['workspace', top.text]]
+
+def handle_jdk(top):
+    return [['jdk',top.text]]
