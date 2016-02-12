@@ -1,4 +1,5 @@
 import logging
+import re
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
@@ -54,10 +55,30 @@ def handle_properties(top):
             slackproperty = handle_slack_property(child)
             properties.append(slackproperty)
 
+        elif child.tag == 'jenkins.model.BuildDiscarderProperty':
+            discarderproperty = handle_build_discarder_property(child)
+            properties.append(discarderproperty)
+
         # A property we don't know about
         else:
             print "cannot handle XML %s" % child.tag
     return [['properties', properties], ['parameters', parameters]]
+
+
+# Handle "<jenkins.model.BuildDiscarderProperty>"
+def handle_build_discarder_property(top):
+    discarder = {}
+    mapping = {
+        'daysToKeep': 'days-to-keep',
+        'numToKeep': 'num-to-keep',
+        'artifactDaysToKeep': 'artifact-days-to-keep',
+        'artifactNumToKeep': 'artifact-num-to-keep',
+    }
+
+    for child in top[0]:
+        discarder[mapping[child.tag]] = int(child.text)
+
+    return {'build-discarder': discarder}
 
 
 # Handle "<com.coravy.hudson.plugins.github.GithubProjectProperty>..."
@@ -66,6 +87,8 @@ def handle_github_project_property(top):
     for child in top:
         if child.tag == 'projectUrl':
             github['url'] = child.text
+        elif child.tag == 'displayName':
+            pass
         else:
             raise NotImplementedError("cannot handle XML %s" % child.tag)
     return {'github': github}
@@ -122,6 +145,11 @@ def handle_parameters_property(top):
             parameters.append({parameter_type: parameter_settings})
     return parameters
 
+
+def get_bool(txt):
+    trues = ['true', 'True', 'Yes', 'yes', '1']
+    return txt in trues
+
 def handle_throttle_property(top):
     throttle_ret = {}
     for child in top:
@@ -133,6 +161,10 @@ def handle_throttle_property(top):
             throttle_ret['option'] = child.text
         elif child.tag == 'throttleEnabled':
             throttle_ret['enabled'] = get_bool(child.text)
+        elif child.tag == 'categories':
+            throttle_ret['categories'] = []
+        elif child.tag == 'configVersion':
+            pass # assigned by jjb
         else:
             raise NotImplementedError("cannot handle XML %s" % child.tag)
     return {'throttle':throttle_ret}
@@ -398,8 +430,10 @@ def handle_scm_git(top):
                     git['wipe-workspace'] = True
                 elif extension.tag == 'hudson.plugins.git.extensions.impl.LocalBranch':
                     git['local-branch'] = extension[0].text
+                elif extension.tag == 'hudson.plugins.git.extensions.impl.PerBuildTag':
+                    pass
                 else:
-                    raise NotImplementedError("%s not supported" % child.tag)
+                    raise NotImplementedError("%s not supported" % extension.tag)
 
         else:
             raise NotImplementedError("cannot handle XML %s" % child.tag)
@@ -466,6 +500,42 @@ def handle_triggers(top):
         elif child.tag == 'com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.GerritTrigger':     # NOQA
             # Skip for now
             pass
+        elif child.tag == 'com.cloudbees.jenkins.GitHubPushTrigger':
+            triggers.append('github')
+        elif child.tag == 'org.jenkinsci.plugins.ghprb.GhprbTrigger':
+            ghpr = {}
+            for ghprel in child:
+                tagname = ghprel.tag
+                if tagname == 'spec' or tagname == 'cron':
+                    ghpr['cron'] = ghprel.text
+                elif tagname == 'adminlist':
+                    ghpr['admin-list'] = ghprel.text.strip().split('\n')
+                elif tagname == 'allowMembersOfWhitelistedOrgsAsAdmin':
+                    ghpr['allow-whitelist-orgs-as-admins'] = get_bool(ghprel.text)
+                elif tagname == 'whitelist' and ghprel.text is not None:
+                    ghpr['white-list'] = ghprel.text.strip().split('\n')
+                elif tagname == 'orgslist' and ghprel.text is not None:
+                    ghpr['org-list'] = ghprel.text.strip().split('\n')
+                elif tagname == 'buildDescTemplate':
+                    ghpr['build-desc-template'] = ghprel.text
+                elif tagname == 'triggerPhrase':
+                    ghpr['trigger-phrase'] = ghprel.text
+                elif tagname == 'onlyTriggerPhrase':
+                    ghpr['only-trigger-phrase'] = get_bool(ghprel.text)
+                elif tagname == 'useGitHubHooks':
+                    ghpr['github-hooks'] = get_bool(ghprel.text)
+                elif tagname == 'permitAll':
+                    ghpr['permit-all'] = get_bool(ghprel.text)
+                elif tagname == 'autoCloseFailedPullRequests':
+                    ghpr['auto-close-on-fail'] = get_bool(ghprel.text)
+                elif tagname == 'whiteListTargetBranches':
+                    ghpr['white-list-target-branches'] = []
+                    for ghprbranch in ghprel:
+                        if ghprbranch[0].text is not None:
+                            ghpr['white-list-target-branches'].append(ghprbranch[0].text.strip())
+                elif tagname == 'gitHubAuthId':
+                    ghpr['auth-id'] = ghprel.text
+            triggers.append({'github-pull-request': ghpr})
         else:
             raise NotImplementedError("cannot handle XML %s" % child.tag)
     return [['triggers', triggers]]
@@ -818,7 +888,69 @@ def handle_publishers(top):
             raise NotImplementedError("cannot handle XML %s" % child.tag)
         elif child.tag == 'jenkins.plugins.publish__over__ssh.BapSshPublisherPlugin':
             raise NotImplementedError("cannot handle XML %s" % child.tag)
-
+        elif child.tag == 'jenkins.plugins.slack.SlackNotifier':
+            slacknotifier = {}
+            slack_tags = ['teamDomain', 'authToken', 'buildServerUrl', 'room']
+            for slack_el in child:
+                if slack_el.tag not in slack_tags:
+                    raise NotImplementedError("cannot handle SlackNotifier.%s" % slack_el.tag)
+                slack_yaml_key = re.sub('([A-Z])', r'-\1', slack_el.tag).lower()
+                slacknotifier[slack_yaml_key] = slack_el.text
+            publishers.append({'slack': slacknotifier})
+        elif child.tag == 'hudson.plugins.postbuildtask.PostbuildTask':
+            post_tasks = []
+            for pt in child[0]:
+                post_task = {}
+                for ptel in pt:
+                    if ptel.tag == 'logTexts':
+                        matches = []
+                        for logtext in ptel:
+                            match = {}
+                            for logtextel in logtext:
+                                if logtextel.tag == 'logText':
+                                    match['log-text'] = logtextel.text
+                                elif logtextel.tag == 'operator':
+                                    match['operator'] = logtextel.text
+                            matches.append(match)
+                        post_task['matches'] = matches
+                    elif ptel.tag == 'EscalateStatus':
+                        post_task['escalate-status'] = get_bool(ptel.text)
+                    elif ptel.tag == 'RunIfJobSuccessful':
+                        post_task['run-if-job-successful'] = get_bool(ptel.text)
+                    elif ptel.tag == 'script':
+                        post_task['script'] = ptel.text
+                post_tasks.append(post_task)
+            publishers.append({'post-tasks': post_tasks})
+        elif child.tag == 'hudson.plugins.ws__cleanup.WsCleanup':
+            cleanup = {'include': [], 'exclude': [], 'clean-if': {}}
+            for cleanupel in child:
+                if cleanupel.tag == 'patterns':
+                    for pattern in cleanupel:
+                        pattern_glob = None
+                        pattern_type = None
+                        for patternel in pattern:
+                            if patternel.tag == 'pattern':
+                                pattern_glob = patternel.text
+                            elif patternel.tag == 'type':
+                                pattern_type = patternel.text
+                        cleanup[pattern_type.lower()].append(pattern_glob)
+                elif cleanupel.tag == 'deleteDirs':
+                    cleanup['dirmatch'] = get_bool(cleanupel.text)
+                elif cleanupel.tag == 'cleanWhenSuccess':
+                    cleanup['clean-if']['success'] = get_bool(cleanupel.text)
+                elif cleanupel.tag == 'cleanWhenUnstable':
+                    cleanup['clean-if']['unstable'] = get_bool(cleanupel.text)
+                elif cleanupel.tag == 'cleanWhenFailure':
+                    cleanup['clean-if']['failure'] = get_bool(cleanupel.text)
+                elif cleanupel.tag == 'cleanWhenNotBuilt':
+                    cleanup['clean-if']['not-built'] = get_bool(cleanupel.text)
+                elif cleanupel.tag == 'cleanWhenAborted':
+                    cleanup['clean-if']['aborted'] = get_bool(cleanupel.text)
+                elif cleanupel.tag == 'notFailBuild':
+                    cleanup['fail-build'] = not get_bool(cleanupel.text)
+                elif cleanupel.tag == 'cleanupMatrixParent':
+                    cleanup['clean-parent'] = get_bool(cleanupel.text)
+            publishers.append({'workspace-cleanup': cleanup})
         else:
             raise NotImplementedError("cannot handle XML %s" % child.tag)
 
