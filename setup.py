@@ -1,5 +1,6 @@
+import subprocess
 import sys
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, Command
 from setuptools.command.test import test as TestCommand
 
 version = '1.0.5'
@@ -21,6 +22,38 @@ class PyTest(TestCommand):
         import pytest
         errno = pytest.main('tests', self.pytest_args)
         sys.exit(errno)
+
+class ReleaseCommand(Command):
+    """ Tag and push a new release. """
+
+    user_options = [('sign', 's', 'GPG-sign the Git tag and release files')]
+
+    def initialize_options(self):
+        self.sign = False
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        # Create Git tag
+        tag_name = 'v%s' % version
+        cmd = ['git', 'tag', '-a', tag_name, '-m', 'version %s' % version]
+        if self.sign:
+            cmd.append('-s')
+        print ' '.join(cmd)
+        subprocess.check_call(cmd)
+
+        # Push Git tag to origin remote
+        cmd = ['git', 'push', 'origin', tag_name]
+        print ' '.join(cmd)
+        subprocess.check_call(cmd)
+
+        # Push package to pypi
+        cmd = ['python', 'setup.py', 'sdist', 'upload']
+        if self.sign:
+            cmd.append('--sign')
+        print ' '.join(cmd)
+        subprocess.check_call(cmd)
 
 setup(name="jenkins-job-wrecker",
       version=version,
@@ -50,5 +83,8 @@ setup(name="jenkins-job-wrecker",
           'pytest',
           'jenkins-job-builder',
       ],
-      cmdclass={'test': PyTest},
+      cmdclass={
+          'release': ReleaseCommand,
+          'test': PyTest,
+      },
      )
