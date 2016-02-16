@@ -30,7 +30,7 @@ setup(name="jenkins-job-wrecker",
                    'Operating System :: OS Independent',
                    'Programming Language :: Python',
                    'Topic :: Software Development :: Libraries :: Python Modules',
-                   ],
+                  ],
       keywords='jenkins xml yaml',
       author='ken dreyer',
       author_email='kdreyer [at] redhat [dot] com',
@@ -41,14 +41,14 @@ setup(name="jenkins-job-wrecker",
           'pyyaml',
           'python-jenkins',
       ],
-      entry_points = {
-        'console_scripts': [
-            'jjwrecker = jenkins_job_wrecker.cli:main',
-            ],
+      entry_points={
+          'console_scripts': [
+              'jjwrecker = jenkins_job_wrecker.cli:main',
+          ],
       },
       tests_require=[
           'pytest',
           'jenkins-job-builder',
-     ],
-      cmdclass = {'test': PyTest},
-)
+      ],
+      cmdclass={'test': PyTest},
+     )
