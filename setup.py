@@ -3,7 +3,7 @@ import sys
 from setuptools import setup, find_packages, Command
 from setuptools.command.test import test as TestCommand
 
-version = '1.0.5'
+version = '1.0.6'
 
 class PyTest(TestCommand):
     user_options = [('pytest-args=', 'a', "Arguments to pass to py.test")]
