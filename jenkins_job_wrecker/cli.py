@@ -8,7 +8,8 @@ import sys
 import textwrap
 import jenkins_job_wrecker.job_handlers as job_handlers
 import xml.etree.ElementTree as ET
-from yaml import dump
+import yaml
+
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger('jjwrecker')
@@ -19,6 +20,16 @@ for handler in logging.getLogger().handlers:
     if isinstance(handler, logging.StreamHandler):
         handler.setFormatter(logging.Formatter(fmt='%(name)s %(levelname)s: '
                                                    '%(message)s'))
+
+
+class literal_unicode(unicode): pass
+
+
+def literal_unicode_representer(dumper, data):
+    return dumper.represent_scalar(u'tag:yaml.org,2002:str', data, style='|')
+
+
+yaml.add_representer(literal_unicode, literal_unicode_representer)
 
 
 # Given a file with XML, or a string of XML, parse it with
@@ -57,7 +68,7 @@ def root_to_yaml(root, name):
             handler = getattr(job_handlers, handler_name)
         except AttributeError:
             # Show our YAML translation so far:
-            print dump(build, default_flow_style=False)
+            print yaml.dump(build, default_flow_style=False)
             # ... and report what still needs to be done:
             raise NotImplementedError("write a function for %s" % handler_name)
         try:
@@ -76,7 +87,23 @@ def root_to_yaml(root, name):
             print 'last called %s' % handler_name
             raise
 
-    return dump(build, default_flow_style=False)
+    # any shell or script elements should be treated as literals
+    def format_shell_scripts(data):
+        for k, v in data.iteritems():
+            if type(v) is dict:
+                format_shell_scripts(v)
+            elif type(v) is list:
+                for lv in v:
+                    if type(lv) is dict:
+                        format_shell_scripts(lv)
+            else:
+                if k == 'shell' or k == 'script':
+                    data[k] = literal_unicode(v)
+
+    for build_element in build:
+        format_shell_scripts(build_element)
+
+    return yaml.dump(build, default_flow_style=False)
 
 
 # argparse foo

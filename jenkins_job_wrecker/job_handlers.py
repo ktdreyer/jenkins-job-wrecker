@@ -922,7 +922,7 @@ def handle_publishers(top):
                 post_tasks.append(post_task)
             publishers.append({'post-tasks': post_tasks})
         elif child.tag == 'hudson.plugins.ws__cleanup.WsCleanup':
-            cleanup = {'include': [], 'exclude': [], 'clean-if': {}}
+            cleanup = {'include': [], 'exclude': [], 'clean-if': []}
             for cleanupel in child:
                 if cleanupel.tag == 'patterns':
                     for pattern in cleanupel:
@@ -937,15 +937,15 @@ def handle_publishers(top):
                 elif cleanupel.tag == 'deleteDirs':
                     cleanup['dirmatch'] = get_bool(cleanupel.text)
                 elif cleanupel.tag == 'cleanWhenSuccess':
-                    cleanup['clean-if']['success'] = get_bool(cleanupel.text)
+                    cleanup['clean-if'].append({'success': get_bool(cleanupel.text)})
                 elif cleanupel.tag == 'cleanWhenUnstable':
-                    cleanup['clean-if']['unstable'] = get_bool(cleanupel.text)
+                    cleanup['clean-if'].append({'unstable': get_bool(cleanupel.text)})
                 elif cleanupel.tag == 'cleanWhenFailure':
-                    cleanup['clean-if']['failure'] = get_bool(cleanupel.text)
+                    cleanup['clean-if'].append({'failure': get_bool(cleanupel.text)})
                 elif cleanupel.tag == 'cleanWhenNotBuilt':
-                    cleanup['clean-if']['not-built'] = get_bool(cleanupel.text)
+                    cleanup['clean-if'].append({'not-built': get_bool(cleanupel.text)})
                 elif cleanupel.tag == 'cleanWhenAborted':
-                    cleanup['clean-if']['aborted'] = get_bool(cleanupel.text)
+                    cleanup['clean-if'].append({'aborted': get_bool(cleanupel.text)})
                 elif cleanupel.tag == 'notFailBuild':
                     cleanup['fail-build'] = not get_bool(cleanupel.text)
                 elif cleanupel.tag == 'cleanupMatrixParent':
