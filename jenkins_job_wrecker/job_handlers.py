@@ -14,6 +14,11 @@ def handle_actions(top):
                                   "non-empty <actions> element.")
 
 
+# Handle "<authToken>tokenvalue</authToken>"
+def handle_authtoken(top):
+    return [['auth-token', top.text]]
+
+
 # Handle "<description>my cool job</description>"
 def handle_description(top):
     return [['description', top.text]]
