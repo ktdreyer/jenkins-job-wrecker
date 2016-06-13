@@ -702,7 +702,10 @@ def handle_commands(element):
         # Assumption: there's only one <command> in this
         # <hudson.tasks.Shell>
         if shell_element.tag == 'command':
-            shell = ''+shell_element.text+''
+            # Handle the case where someone creates an empty shell script
+            shell = ''
+            if shell_element.text is not None:
+                shell = str(shell_element.text)
         else:
             raise NotImplementedError("cannot handle "
                                       "XML %s" % shell_element.tag)
