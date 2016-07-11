@@ -56,36 +56,43 @@ def root_to_yaml(root, name):
     project_types = {
         'project': 'freestyle',
         'matrix-project': 'matrix'}
-    if root.tag not in project_types:
-        raise NotImplementedError('Cannot handle "%s"-type projects' % root.tag)
-    job['project-type'] = project_types[root.tag]
+    if root.tag in project_types:
+        job['project-type'] = project_types[root.tag]
 
-    # Handle each top-level XML element with custom "handle_*" functions in
-    # job_handlers.py.
-    for child in root:
-        handler_name = 'handle_%s' % child.tag.lower()
-        try:
-            handler = getattr(job_handlers, handler_name)
-        except AttributeError:
-            # Show our YAML translation so far:
-            print yaml.dump(build, default_flow_style=False)
-            # ... and report what still needs to be done:
-            raise NotImplementedError("write a function for %s" % handler_name)
-        try:
-            settings = handler(child)
+        # Handle each top-level XML element with custom "handle_*" functions in
+        # job_handlers.py.
+        for child in root:
+            handler_name = 'handle_%s' % child.tag.lower()
+            try:
+                handler = getattr(job_handlers, handler_name)
+            except AttributeError:
+                # Show our YAML translation so far:
+                print yaml.dump(build, default_flow_style=False)
+                # ... and report what still needs to be done:
+                raise NotImplementedError("write a function for %s" % handler_name)
+            try:
+                settings = handler(child)
 
-            if not settings:
-                continue
+                if not settings:
+                    continue
 
-            for setting in settings:
-                key, value = setting
-                if key in job:
-                    job[key].append(value[0])
-                else:
-                    job[key] = value
-        except Exception:
-            print 'last called %s' % handler_name
-            raise
+                for setting in settings:
+                    key, value = setting
+                    if key in job:
+                        job[key].append(value[0])
+                    else:
+                        job[key] = value
+            except Exception:
+                print 'last called %s' % handler_name
+                raise
+    else:
+        # Project type not currently supported, so output as raw XML
+        if 'maven' in root.tag:
+            job['project-type'] = 'maven'
+
+        raw = {}
+        raw['xml'] = ET.tostring(root)
+        job['xml'] = {'raw':raw}
 
     # any shell or script elements should be treated as literals
     def format_shell_scripts(data):
