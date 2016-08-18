@@ -313,7 +313,10 @@ def handle_scm_git(top):
                                                         len(list(child))))
 
             for setting in child[0]:
-                git[setting.tag] = setting.text
+                if setting.tag == 'credentialsId':
+                    git['credentials-id'] = setting.text
+                else:
+                    git[setting.tag] = setting.text
 
         elif child.tag == 'gitTool':
             git['git-tool'] = child.text
