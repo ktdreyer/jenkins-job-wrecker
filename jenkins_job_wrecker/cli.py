@@ -184,8 +184,17 @@ def main():
         # Convert to YAML
         root = get_xml_root(filename=args.filename)
         yaml = root_to_yaml(root, args.name)
-        # write yaml string to file (job-name.yml)
+        # Create output directory structure where needed
         yaml_filename = os.path.join('output', args.name + '.yml')
+        path = os.path.dirname(yaml_filename)
+        try:
+            os.makedirs(path)
+        except OSError as exc:	# Python >2.5
+            if exc.errno == errno.EEXIST and os.path.isdir(path):
+                pass
+            else:
+                raise
+        # Write to output file
         output_file = open(yaml_filename, 'w')
         output_file.write(yaml)
         output_file.close()
@@ -229,8 +238,17 @@ def main():
             root = get_xml_root(string=xml)
             log.info('converting job "%s" to YAML' % name)
             yaml = root_to_yaml(root, name)
-            # write yaml string to file (job-name.yml)
+            # Create output directory structure where needed
             yaml_filename = os.path.join('output', name + '.yml')
+            path = os.path.dirname(yaml_filename)
+            try:
+                os.makedirs(path)
+            except OSError as exc:	# Python >2.5
+                if exc.errno == errno.EEXIST and os.path.isdir(path):
+                    pass
+                else:
+                    raise
+            # Write to output file
             output_file = open(yaml_filename, 'w')
             output_file.write(yaml)
             output_file.close()
