@@ -49,6 +49,11 @@ class ReleaseCommand(Command):
         print ' '.join(cmd)
         subprocess.check_call(cmd)
 
+        # Push branch to origin remote
+        cmd = ['git', 'push', 'origin', 'master']
+        print ' '.join(cmd)
+        subprocess.check_call(cmd)
+
         # Push package to pypi
         cmd = ['python', 'setup.py', 'sdist', 'upload']
         if self.sign:
