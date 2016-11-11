@@ -33,8 +33,9 @@ You will now have a ``jjwrecker`` utility in your ``$PATH``.
 
 Usage
 -----
-Let's say you have an XML definition file for "my-job". Here's how you convert
-that to YAML::
+Let's say you have an XML definition file for "my-job". You'll typically find
+these .xml files on your Jenkins master, maybe in ``/var/lib/jenkins/jobs/``.
+Here's how you convert that job file to YAML::
 
      jjwrecker -f path/to/my-job/config.xml -n 'my-job'
 
