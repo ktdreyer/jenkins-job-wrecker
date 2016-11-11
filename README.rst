@@ -33,8 +33,9 @@ You will now have a ``jjwrecker`` utility in your ``$PATH``.
 
 Usage
 -----
-Let's say you have an XML definition file for "my-job". Here's how you convert
-that to YAML::
+Let's say you have an XML definition file for "my-job". You'll typically find
+these .xml files on your Jenkins master, maybe in ``/var/lib/jenkins/jobs/``.
+Here's how you convert that job file to YAML::
 
      jjwrecker -f path/to/my-job/config.xml -n 'my-job'
 
@@ -57,12 +58,23 @@ name::
 jjwrecker will iterate through all the jobs and create ``.yml`` files in
 ``output/``.
 
-It is required to determine a username and password to connect to the remote
-Jenkins server. These credentials can be set as normal environment variables,
-exported before hand or right before running the CLI tool::
+If your Jenkins instance requires a username and password to connect to the
+remote Jenkins server, you can set these as environment variables, exported
+before hand or right before running the CLI tool::
 
      JJW_USERNAME=alfredo JJW_PASSWORD=go-tamaulipas jjwrecker -s
      http://jenkins.ceph.com
+
+If your Jenkins instance is using HTTPS and protected by a custom CA, add the
+CA's public cert to your system certificate store:
+
+* Fedora: ``/etc/pki/tls/certs`` directory,
+* Ubuntu: ``/usr/local/share/ca-certificates/``
+
+After you've placed the PEM-formmated file there, run ``c_reshash`` in that
+directory to create the CA certificate hash symlink.  jjwrecker uses
+python-jenkins, which in turn uses six's urllib, and that library will validate
+HTTPS connections based on this openssl-hashed directory of certificates.
 
 
 License
