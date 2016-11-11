@@ -65,6 +65,17 @@ before hand or right before running the CLI tool::
      JJW_USERNAME=alfredo JJW_PASSWORD=go-tamaulipas jjwrecker -s
      http://jenkins.ceph.com
 
+If your Jenkins instance is using HTTPS and protected by a custom CA, add the
+CA's public cert to your system certificate store:
+
+* Fedora: ``/etc/pki/tls/certs`` directory,
+* Ubuntu: ``/usr/local/share/ca-certificates/``
+
+After you've placed the PEM-formmated file there, run ``c_reshash`` in that
+directory to create the CA certificate hash symlink.  jjwrecker uses
+python-jenkins, which in turn uses six's urllib, and that library will validate
+HTTPS connections based on this openssl-hashed directory of certificates.
+
 
 License
 -------
