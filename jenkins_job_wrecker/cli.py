@@ -22,14 +22,17 @@ for handler in logging.getLogger().handlers:
                                                    '%(message)s'))
 
 
-class literal_unicode(unicode): pass
+def str_presenter(dumper, data):
+  if len(data.splitlines()) > 1:  # check for multiline string
+    # The dumper will not respect "style='|'" if it detects trailing
+    # whitespace on any line within the data. For scripts the trailing
+    # whitespace is not important.
+    lines = [l.strip() for l in data.splitlines()]
+    data = '\n'.join(lines)
+    return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='|')
+  return dumper.represent_scalar('tag:yaml.org,2002:str', data)
 
-
-def literal_unicode_representer(dumper, data):
-    return dumper.represent_scalar(u'tag:yaml.org,2002:str', data, style='|')
-
-
-yaml.add_representer(literal_unicode, literal_unicode_representer)
+yaml.add_representer(str, str_presenter)
 
 
 # Given a file with XML, or a string of XML, parse it with
@@ -94,23 +97,7 @@ def root_to_yaml(root, name):
         raw['xml'] = ET.tostring(root)
         job['xml'] = {'raw':raw}
 
-    # any shell or script elements should be treated as literals
-    def format_shell_scripts(data):
-        for k, v in data.iteritems():
-            if type(v) is dict:
-                format_shell_scripts(v)
-            elif type(v) is list:
-                for lv in v:
-                    if type(lv) is dict:
-                        format_shell_scripts(lv)
-            else:
-                if k == 'shell' or k == 'script':
-                    data[k] = literal_unicode(v)
-
-    for build_element in build:
-        format_shell_scripts(build_element)
-
-    return yaml.dump(build, default_flow_style=False)
+    return yaml.dump(build, default_flow_style=False, default_style=None)
 
 
 # argparse foo
@@ -189,7 +176,7 @@ def main():
         path = os.path.dirname(yaml_filename)
         try:
             os.makedirs(path)
-        except OSError as exc:	# Python >2.5
+        except OSError as exc:  # Python >2.5
             if exc.errno == errno.EEXIST and os.path.isdir(path):
                 pass
             else:
@@ -243,7 +230,7 @@ def main():
             path = os.path.dirname(yaml_filename)
             try:
                 os.makedirs(path)
-            except OSError as exc:	# Python >2.5
+            except OSError as exc:  # Python >2.5
                 if exc.errno == errno.EEXIST and os.path.isdir(path):
                     pass
                 else:
