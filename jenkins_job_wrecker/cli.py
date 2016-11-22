@@ -1,3 +1,4 @@
+# encoding=utf8
 import argparse
 from argparse import ArgumentDefaultsHelpFormatter
 import errno
@@ -10,6 +11,10 @@ import jenkins_job_wrecker.job_handlers as job_handlers
 import xml.etree.ElementTree as ET
 import yaml
 
+is_py_v2 = True if sys.version[0] == '2' else False
+if is_py_v2:
+    reload(sys)
+    sys.setdefaultencoding('utf8')
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger('jjwrecker')
