@@ -533,7 +533,11 @@ def handle_triggers(top):
                     if tagname == 'spec' or tagname == 'cron':
                         ghpr['cron'] = ghprel.text
                     elif tagname == 'adminlist':
-                        ghpr['admin-list'] = ghprel.text.strip().split('\n')
+                        ghprel_text = ghprel.text
+                        if ghprel_text:
+                            ghpr['admin-list'] = ghprel.text.strip().split('\n')
+                        else:
+                            ghpr['admin-list'] = ['']
                     elif tagname == 'allowMembersOfWhitelistedOrgsAsAdmin':
                         ghpr['allow-whitelist-orgs-as-admins'] = get_bool(ghprel.text)
                     elif tagname == 'whitelist' and ghprel.text is not None:
