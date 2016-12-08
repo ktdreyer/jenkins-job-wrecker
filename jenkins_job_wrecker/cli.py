@@ -19,13 +19,6 @@ if is_py_v2:
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger('jjwrecker')
 
-# set the format of the standard StreamHandler to have a space in it
-# (on the root logger)
-for handler in logging.getLogger().handlers:
-    if isinstance(handler, logging.StreamHandler):
-        handler.setFormatter(logging.Formatter(fmt='%(name)s %(levelname)s: '
-                                                   '%(message)s'))
-
 
 def str_presenter(dumper, data):
   if len(data.splitlines()) > 1:  # check for multiline string
