@@ -241,6 +241,10 @@ def handle_scm(top):
                 ('class' in top.attrib and top.attrib['class'] == 'hudson.plugins.mercurial.MercurialSCM'):
             hg = handle_scm_hg(top)
             scm_ret = {'hg': hg}
+        elif top.tag == 'hudson.scm.SubversionSCM' or \
+                ('class' in top.attrib and top.attrib['class'] == 'hudson.scm.SubversionSCM'):
+            svn = handle_scm_svn(top)
+            scm_ret = {'svn': svn}
         else:
             raise NotImplementedError("%s scm not supported" % top.attrib['class'])
     except NotImplementedError:
@@ -296,6 +300,102 @@ def handle_scm_hg(top):
                 hg['browser-url'] = child.find('url').text
 
     return hg
+
+def handle_scm_svn(top):
+    # Parameters:
+    # url (str) - URL of the svn repository
+    # basedir (str) - location relative to the workspace root to checkout to (default '.')
+    # credentials-id (str) - optional argument to specify the ID of credentials to use
+    # repo-depth (str) - Repository depth. Can be one of 'infinity', 'empty',
+    # 'files', 'immediates' or 'unknown'. (default 'infinity')
+    # ignore-externals (bool) - Ignore Externals. (default false)
+    # workspaceupdater (str) - optional argument to specify
+    # workspaceupdater -
+    # optional argument to specify how to update the workspace (default wipeworkspace)
+    # supported values:
+    #     wipeworkspace - deletes the workspace before checking out
+    #     revertupdate - do an svn revert then an svn update
+    #     emulateclean - delete unversioned/ignored files then update
+    #     update - do an svn update as much as possible
+    # excluded-users (list(str)) - list of users to ignore revisions from when polling for changes (if polling is enabled; parameter is optional)
+    # included-regions (list(str)) - list of file/folders to include (optional)
+    # excluded-regions (list(str)) - list of file/folders to exclude (optional)
+    # excluded-commit-messages (list(str)) - list of commit messages to exclude (optional)
+    # exclusion-revprop-name (str) - revision svn-property to ignore (optional)
+    # ignore-property-changes-on-directories (bool) - ignore svn-property only changes of directories (default false)
+    # filter-changelog (bool) - If set Jenkins will apply the same inclusion and exclusion patterns for displaying changelog entries as it does for polling for changes (default false)
+    # repos (list) - list of repositories to checkout (optional)
+    # viewvc-url (str) -
+    # URL of the svn web interface (optional)
+    #     Repo:
+    #         url (str) - URL for the repository
+    #         basedir (str) - Location relative to the workspace root to checkout to (default '.')
+    #         credentials-id - optional ID of credentials to use
+    #         repo-depth - Repository depth. Can be one of 'infinity', 'empty', 'files', 'immediates' or 'unknown'. (default 'infinity')
+    #         ignore-externals - Ignore Externals. (default false)
+    svn = {}
+
+    for child in top:
+        if child.tag == 'remote':
+            svn['url'] = child.text if child.text else ''
+        elif child.tag == 'local':
+            svn['basedir'] = child.text if child.text else ''
+        elif child.tag == 'credentialsId':
+            svn['credentials-id'] = child.text if child.text else ''
+        elif child.tag == 'depthOption':
+            svn['repo-depth'] = child.text if child.text else ''
+        elif child.tag == 'ignoreExternalsOption':
+            svn['ignore-externals'] = (child.text == 'true')
+        elif child.tag == 'workspaceUpdater':
+            # see
+            # https://github.com/openstack-infra/jenkins-job-builder/blob/master/jenkins_jobs/modules/scm.py#L835
+            if child.attrib['class'] == 'hudson.scm.subversion.CheckoutUpdater':
+                svn['workspaceupdater'] = 'wipeworkspace'
+            elif child.attrib['class'] == 'hudson.scm.subversion.UpdateWithRevertUpdater':
+                svn['workspaceupdater'] = 'revertupdate'
+            elif child.attrib['class'] == 'hudson.scm.subversion.UpdateWithCleanUpdater':
+                svn['workspaceupdater'] = 'emulateclean'
+            elif child.attrib['class'] == 'hudson.scm.subversion.UpdateUpdater':
+                svn['workspaceupdater'] = 'update'
+
+        elif child.tag == 'includedRegions':
+            svn['included-regions'] = child.text if child.text else ''
+        elif child.tag == 'excludedRegions':
+            svn['excluded-regions'] = child.text if child.text else ''
+        elif child.tag == 'excludedUsers':
+            svn['excluded-users'] = child.text if child.text else ''
+        elif child.tag == 'excludedCommitMessages':
+            svn['excluded-commit-messages'] = child.text if child.text else ''
+        elif child.tag == 'excludedRevprop':
+            svn['exclusion-revprop-name'] = child.text if child.text else ''
+        elif child.tag == 'ignoreDirPropChanges':
+            svn['ignore-property-changes-on-directories'] = \
+                (child.text == 'true')
+        elif child.tag == 'filterChangelog':
+            svn['filter-changelog'] = (child.text == 'true')
+        elif child.tag == 'locations':
+            if len(list(child)) > 0:
+                repos = []
+                for c in child._children:
+                    repo = {}
+                    for r in c:
+                        if r.tag == 'remote':
+                            repo['url'] = r.text if r.text else ''
+                        elif r.tag == 'local':
+                            repo['basedir'] = r.text if r.text else ''
+                        elif r.tag == 'credentialsId':
+                            repo['credentials-id'] = r.text if r.text else ''
+                        elif r.tag == 'depthOption':
+                            repo['repo-depth'] = r.text if r.text else ''
+                        elif r.tag == 'ignoreExternalsOption':
+                            repo['ignore-externals'] = (r.text == 'true')
+                    repos.append(repo)
+
+            svn['repos'] = repos
+        else:
+            raise NotImplementedError("%s not supported tag in svn scm" % child.tag)
+
+    return svn
 
 def handle_scm_git(top):
     git = {}
