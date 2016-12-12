@@ -617,6 +617,18 @@ def handle_axes(top):
                     axis['values'] = values
             axes.append({'axis': axis})
 
+        elif child.tag == 'jenkins.plugins.shiningpanda.matrix.PythonAxis':
+            axis = {'type': 'python'}
+            for axis_element in child:
+                if axis_element.tag == 'name':
+                    axis['name'] = axis_element.text
+                if axis_element.tag == 'values':
+                    values = []
+                    for value_element in axis_element:
+                        values.append(value_element.text)
+                    axis['values'] = values
+            axes.append({'axis': axis})
+
         else:
             raise NotImplementedError("cannot handle XML %s" % child.tag)
 
