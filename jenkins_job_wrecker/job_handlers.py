@@ -2,6 +2,9 @@ import logging
 import re
 import xml.etree.ElementTree as ET
 
+from importlib import import_module
+from jenkins_job_wrecker.builders import BuilderRegister
+
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
@@ -725,96 +728,20 @@ def handle_axes(top):
 
 def handle_builders(top):
     builders = []
+    register = BuilderRegister() 
     for child in top:
+        builder_name = child.tag.split('.')[-1].lower()
+        builder = {}
         try:
-            if child.tag == 'hudson.plugins.copyartifact.CopyArtifact':
-                copyartifact = {}
-                selectdict = {
-                    'StatusBuildSelector': 'last-successful',
-                    'LastCompletedBuildSelector': 'last-completed',
-                    'SpecificBuildSelector': 'specific-build',
-                    'SavedBuildSelector': 'last-saved',
-                    'TriggeredBuildSelector': 'upstream-build',
-                    'PermalinkBuildSelector': 'permalink',
-                    'WorkspaceSelector': 'workspace-latest',
-                    'ParameterizedBuildSelector': 'build-param',
-                    'DownstreamBuildSelector': 'downstream-build'}
-                for copy_element in child:
-                    if copy_element.tag == 'project':
-                        copyartifact[copy_element.tag] = copy_element.text
-                    elif copy_element.tag == 'filter':
-                        copyartifact[copy_element.tag] = copy_element.text
-                    elif copy_element.tag == 'target':
-                        copyartifact[copy_element.tag] = copy_element.text
-                    elif copy_element.tag == 'excludes':
-                        copyartifact['exclude-pattern'] = copy_element.text
-                    elif copy_element.tag == 'selector':
-                        select = copy_element.attrib['class']
-                        select = select.replace('hudson.plugins.copyartifact.', '')
-                        copyartifact['which-build'] = selectdict[select]
-                    elif copy_element.tag == 'flatten':
-                        copyartifact[copy_element.tag] = \
-                            (copy_element.text == 'true')
-                    elif copy_element.tag == 'doNotFingerprintArtifacts':
-                        # Not yet implemented in JJB
-                        # ADD RAW XML
-                        continue
-                    elif copy_element.tag == 'optional':
-                        copyartifact[copy_element.tag] = \
-                            (copy_element.text == 'true')
-                    else:
-                        raise NotImplementedError("cannot handle "
-                                                  "XML %s" % copy_element.tag)
-                builders.append({'copyartifact': copyartifact})
-
-            elif child.tag == 'hudson.tasks.Shell':
-                shell = handle_commands(child)
-                builders.append({'shell': shell})
-
-            elif child.tag == 'hudson.tasks.BatchFile':
-                batch = handle_commands(child)
-                builders.append({'batch':batch})
-
-            elif child.tag == 'hudson.tasks.Maven':
-                maven = {}
-                for maven_element in child:
-                    if maven_element.tag == 'targets':
-                        maven['goals'] = maven_element.text
-                    elif maven_element.tag == 'mavenName':
-                        maven['name'] = maven_element.text
-                    elif maven_element.tag == 'usePrivateRepository':
-                        maven['private-repository'] = (maven_element.text == 'true')
-                    elif maven_element.tag == 'settings':
-                        maven['settings'] = maven_element.attrib['class']
-                    elif maven_element.tag == 'globalSettings':
-                        maven['global-settings'] = maven_element.attrib['class']
-                    else:
-                        continue
-                builders.append({'maven-target':maven})
-
-            else:
-                raise NotImplementedError("cannot handle XML %s" % child.tag)
+            register[builder_name](child, builder)
+            builders.append(builder)
         except NotImplementedError:
             # Add builder information as raw XML
             raw = {}
             raw['xml'] = ET.tostring(child)
-            builders.append({'raw':raw})
+            builders.append({'raw': raw})
 
     return [['builders', builders]]
-
-def handle_commands(element):
-    for shell_element in element:
-        # Assumption: there's only one <command> in this
-        # <hudson.tasks.Shell>
-        if shell_element.tag == 'command':
-            # Handle the case where someone creates an empty shell script
-            shell = ''
-            if shell_element.text is not None:
-                shell = str(shell_element.text)
-        else:
-            raise NotImplementedError("cannot handle "
-                                      "XML %s" % shell_element.tag)
-    return shell
 
 
 def handle_publishers(top):
