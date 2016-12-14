@@ -7,7 +7,8 @@ import jenkins
 import os
 import sys
 import textwrap
-import jenkins_job_wrecker.job_handlers as job_handlers
+from jenkins_job_wrecker.modules.handlers import Handlers
+from jenkins_job_wrecker.registry import Registry
 import xml.etree.ElementTree as ET
 import yaml
 
@@ -51,7 +52,7 @@ def root_to_yaml(root, name):
     job = {}
     build = [{'job': job}]
 
-    job['name'] = name
+    job['name'] = str(name)
 
     # "project-type:" YAML
     project_types = {
@@ -61,31 +62,10 @@ def root_to_yaml(root, name):
         job['project-type'] = project_types[root.tag]
 
         # Handle each top-level XML element with custom "handle_*" functions in
-        # job_handlers.py.
-        for child in root:
-            handler_name = 'handle_%s' % child.tag.lower()
-            try:
-                handler = getattr(job_handlers, handler_name)
-            except AttributeError:
-                # Show our YAML translation so far:
-                print yaml.dump(build, default_flow_style=False)
-                # ... and report what still needs to be done:
-                raise NotImplementedError("write a function for %s" % handler_name)
-            try:
-                settings = handler(child)
-
-                if not settings:
-                    continue
-
-                for setting in settings:
-                    key, value = setting
-                    if key in job:
-                        job[key].append(value[0])
-                    else:
-                        job[key] = value
-            except Exception:
-                print 'last called %s' % handler_name
-                raise
+        # modudles/handlers.py.
+        reg = Registry()
+        handlers = Handlers(reg)
+        handlers.gen_yml(job, root)
     else:
         # Project type not currently supported, so output as raw XML
         if 'maven' in root.tag:
