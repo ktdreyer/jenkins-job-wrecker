@@ -81,7 +81,7 @@ def shell(child, parent):
         # <hudson.tasks.Shell>
         if shell_element.tag == 'command':
             if shell_element.text is not None:
-                shell = str(shell_element.text)
+                shell = shell_element.text
         else:
             raise NotImplementedError("cannot handle "
                                       "XML %s" % shell_element.tag)

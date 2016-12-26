@@ -20,6 +20,7 @@ if is_py_v2:
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger('jjwrecker')
 
+class literal_unicode(unicode): pass
 
 def str_presenter(dumper, data):
   if len(data.splitlines()) > 1:  # check for multiline string
@@ -32,6 +33,7 @@ def str_presenter(dumper, data):
   return dumper.represent_scalar('tag:yaml.org,2002:str', data)
 
 yaml.add_representer(str, str_presenter)
+yaml.add_representer(literal_unicode, str_presenter)
 
 
 # Given a file with XML, or a string of XML, parse it with
@@ -52,7 +54,7 @@ def root_to_yaml(root, name):
     job = {}
     build = [{'job': job}]
 
-    job['name'] = str(name)
+    job['name'] = unicode(name)
 
     # Create register
     reg = Registry()
