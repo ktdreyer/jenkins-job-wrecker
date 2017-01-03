@@ -85,7 +85,7 @@ setup(name="jenkins-job-wrecker",
               'jjwrecker = jenkins_job_wrecker.cli:main',
           ],
           'jenkins_job_wrecker.builders': [
-              'batchfile = jenkins_job_wrecker.builders:shell'
+              'batchfile = jenkins_job_wrecker.modules.builders:shell'
           ],
       },
       tests_require=[

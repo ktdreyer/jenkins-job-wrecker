@@ -1,23 +1,16 @@
 # encoding=utf8
-from inspect import getmembers, isfunction
-from pkg_resources import iter_entry_points
-from sys import modules
+import jenkins_job_wrecker.modules.base
 
 
-class BuilderRegister(object):
-    def __init__(self):
-        self.builders = {name: obj
-                         for name,obj in getmembers(modules[__name__])
-                         if isfunction(obj)}
-        for ep in iter_entry_points(group='jenkins_job_wrecker.builders'):
-            self.builders.update({ep.name: ep.load()})
+class Builders(jenkins_job_wrecker.modules.base.Base):
+    component = 'builders'
 
-    def __getitem__(self, name):
-        try:
-            return self.builders[name]
-        except KeyError:
-            # No valid handler
-            raise NotImplementedError("cannot handle builder %s" % name)
+    def gen_yml(self, yml_parent, data):
+        builders = []
+        for child in data:
+            object_name = child.tag.split('.')[-1].lower()
+            self.registry.dispatch(self.component, object_name, child, builders)
+        yml_parent.append(['builders', builders])
 
 
 def copyartifact(child, parent):
@@ -58,7 +51,8 @@ def copyartifact(child, parent):
         else:
             raise NotImplementedError("cannot handle "
                                       "XML %s" % copy_element.tag)
-    parent['copyartifact'] = copyartifact
+            
+    parent.append({'copyartifact': copyartifact})
 
 
 def maven(child, parent):
@@ -76,7 +70,8 @@ def maven(child, parent):
             maven['global-settings'] = maven_element.attrib['class']
         else:
             continue
-    parent['maven-target'] = maven
+
+    parent.append({'maven-target': maven})
 
 
 def shell(child, parent):
@@ -90,4 +85,5 @@ def shell(child, parent):
         else:
             raise NotImplementedError("cannot handle "
                                       "XML %s" % shell_element.tag)
-        parent['shell'] = shell
+
+    parent.append({'shell': shell})
