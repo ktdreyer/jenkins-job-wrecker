@@ -44,7 +44,8 @@ def reversebuildtrigger(top, parent):
         else:
             raise NotImplementedError('cannot handle scm trigger '
                                       'setting %s' % child.tag)
-    parent.append(reverse)
+
+    parent.append({'reverse': reverse})
 
 
 def gerrittrigger(top, parent):
