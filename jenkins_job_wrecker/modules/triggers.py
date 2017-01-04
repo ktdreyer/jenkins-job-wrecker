@@ -42,7 +42,7 @@ def reversebuildtrigger(top, parent):
         elif child.tag == 'spec':
             pass    # TODO
         else:
-            raise NotImplementedError('cannot handle scm trigger '
+            raise NotImplementedError('cannot handle reverse trigger '
                                       'setting %s' % child.tag)
 
     parent.append({'reverse': reverse})
