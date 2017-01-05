@@ -54,15 +54,18 @@ def root_to_yaml(root, name):
 
     job['name'] = str(name)
 
+    # Create register
+    reg = Registry()
+
     # "project-type:" YAML
-    project_types = {
-        'project': 'freestyle',
-        'matrix-project': 'matrix'}
+    project_types = reg.get_project_types()
+
     if root.tag in project_types:
         job['project-type'] = project_types[root.tag]
 
-        # Handle each top-level XML element with custom "handle_*" functions in
-        # modudles/handlers.py.
+        # Handle each top-level XML element with custom modules/functions in
+        # modules/handlers.py
+        # registry determines difference at runtime
         reg = Registry()
         handlers = Handlers(reg)
         handlers.gen_yml(job, root)

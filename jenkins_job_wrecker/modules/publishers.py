@@ -123,34 +123,51 @@ def buildtrigger(top, parent):
     build_trigger = {}
 
     for element in top:
-        for sub in element:
-            if sub.tag == 'hudson.plugins.parameterizedtrigger.BuildTriggerConfig':     # NOQA
+        if element.tag == 'configs' and len(list(top)) == 1:
+            build_trigger = []
+            for sub in element:
+                project = {}
                 for config in sub:
                     if config.tag == 'projects':
-                        build_trigger['project'] = config.text
-                    elif config.tag == 'condition':
-                        build_trigger['condition'] = config.text
+                        project['project'] = config.text.split(',')
+                    elif (config.tag == 'condition' and
+                          config.text in ['SUCCESS', 'UNSTABLE', 'FAILED_OR_BETTER',
+                                          'UNSTABLE_OR_BETTER', 'UNSTABLE_OR_WORSE',
+                                          'FAILED', 'ALWAYS']):
+                        project['condition'] = config.text
                     elif config.tag == 'triggerWithNoParameters':
-                        build_trigger['trigger-with-no-params'] = \
+                        project['trigger-with-no-params'] = \
                             (config.text == 'true')
                     elif config.tag == 'configs':
                         pass
                     else:
                         raise NotImplementedError("cannot handle "
                                                   "XML %s" % config.tag)
+                build_trigger.append(project)
 
-    parent.append({'trigger-parameterized-builds': build_trigger})
+            parent.append({'trigger-parameterized-builds': build_trigger})
+            return
+        elif element.tag == 'childProjects':
+            build_trigger['project'] = element.text
+        elif element.tag == 'threshold':
+            for item in element:
+                if item.tag == 'name' and item.text in ['SUCCESS', 'UNSTABLE', 'FAILURE']:
+                    build_trigger['threshold'] = item.text
+        else:
+            raise NotImplementedError("cannot handle "
+                                      "XML %s" % element.tag)
+    parent.append({'trigger': build_trigger})
+    return
 
 
 def mailer(top, parent):
     email_settings = {}
     for element in top:
-
         if element.tag == 'recipients':
             email_settings['recipients'] = element.text
         elif element.tag == 'dontNotifyEveryUnstableBuild':
             email_settings['notify-every-unstable-build'] = \
-                (element.text == 'true')
+                (element.text == 'false')
         elif element.tag == 'sendToIndividuals':
             email_settings['send-to-individuals'] = \
                 (element.text == 'true')
