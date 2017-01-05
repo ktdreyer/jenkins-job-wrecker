@@ -2,23 +2,32 @@
 import jenkins_job_wrecker.modules.base
 from jenkins_job_wrecker.helpers import get_bool
 
+PARAMETER_MAPPER = {
+    'stringparameterdefinition': 'string',
+    'booleanparameterdefinition': 'bool',
+    'choiceparameterdefinition': 'choice',
+    'textparameterdefinition': 'text',
+    'fileparameterdefinition': 'file',}
+
 
 class Properties(jenkins_job_wrecker.modules.base.Base):
     component = 'properties'
 
     def gen_yml(self, yml_parent, data):
-        properties = []
         parameters = []
+        properties = []
         for child in data:
             object_name = child.tag.split('.')[-1].lower()
             object_name = object_name.replace('-', '').replace('_', '')
             if object_name == 'parametersdefinitionproperty':
-                self.registry.dispatch(self.component, object_name, child, parameters)
+                self.registry.dispatch(self.component, 'parameters', child, parameters)
                 continue
             self.registry.dispatch(self.component, object_name, child, properties)
 
-        yml_parent.append(['properties', properties])
-        yml_parent.append(['parameters', parameters])
+        if len(properties) > 0:
+            yml_parent.append(['properties', properties])
+        if len(parameters) > 0:
+            yml_parent.append(['parameters', parameters])
 
 
 def githubprojectproperty(top, parent):
@@ -34,52 +43,35 @@ def githubprojectproperty(top, parent):
     parent.append({'github': github})
 
 
-def parametersdefinitionproperty(top, parent):
-    for parameterdefs in top:
-        if parameterdefs.tag != 'parameterDefinitions':
-            raise NotImplementedError("cannot handle "
-                                      "XML %s" % parameterdefs.tag)
-        for parameterdef in parameterdefs:
-            if parameterdef.tag == 'hudson.model.StringParameterDefinition':
-                parameter_type = 'string'
-            elif parameterdef.tag == 'hudson.model.BooleanParameterDefinition':
-                parameter_type = 'bool'
-            elif parameterdef.tag == 'hudson.model.ChoiceParameterDefinition':
-                parameter_type = 'choice'
-            else:
-                raise NotImplementedError(parameterdef.tag)
-
-            parameter_settings = {}
-            for defsetting in parameterdef:
-                key = {'defaultValue': 'default'}.get(defsetting.tag, defsetting.tag)
-                # If the XML had a blank string, don't pass None to PyYAML,
-                # because PyYAML will translate this as "null". Just use a
-                # blank string to be safe.
-                if defsetting.text is None:
-                    value = ''
-                # If the XML has a value of "true" or "false", we shouldn't
-                # treat the value as a string. Use native Python booleans
-                # so PyYAML will not quote the values as strings.
-                elif defsetting.text == 'true':
-                    value = True
-                elif defsetting.text == 'false':
-                    value = False
-                # Get all the choices
-                elif parameter_type == 'choice':
+def parameters(top, parent):
+    for params in top:
+        if params.tag != 'parameterDefinitions':
+            raise NotImplementedError("cannot handle XML %s" % params.tag)
+        for param in params:
+            param_name = param.tag.split('.')[-1].lower()
+            if param_name not in PARAMETER_MAPPER:
+                gen_raw(param,parent)
+                continue
+            param_type = PARAMETER_MAPPER[param_name]
+            parameter = {}
+            for setting in param:
+                key = {'defaultValue': 'default'}.get(setting.tag, setting.tag)
+                if setting.text is None:
+                    parameter[key] = ''
+                elif setting.text == 'true' or setting.text == 'false':
+                    parameter[key] = (setting.text == 'true')
+                elif param_type == 'choice':
                     choices = []
-                    for sub_setting in defsetting:
+                    for sub_setting in setting:
                         if(sub_setting.attrib['class'] == 'string-array'):
-                            for element in sub_setting:
-                                choices.append(element.text)
+                            for item in sub_setting:
+                                choices.append(item.text)
                         else:
                             raise NotImplementedError(sub_setting.attrib['class'])
-                    value = choices
-                # Assume that PyYAML will handle everything else correctly
+                    parameter[key] = choices
                 else:
-                    value = defsetting.text
-                parameter_settings[key] = value
-            parent.append({parameter_type: parameter_settings})
-
+                    parameter[key] = setting.text
+            parent.append({param_type: parameter})
 
 def throttlejobproperty(top, parent):
     throttle = {}

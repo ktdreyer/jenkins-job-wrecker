@@ -9,11 +9,34 @@ from pkg_resources import iter_entry_points
 from pkgutil import iter_modules
 
 
+class DuplicateEntryPoint(Exception):
+    pass
+
+
 class Registry(object):
     registry = {}
+    project_types = {}
 
     def __init__(self):
         self.__handlers()
+
+    def _get_entry_points(self, name):
+        found = {}
+        for ep in iter_entry_points(group=name):
+            if ep.name in found:
+                msg = 'Entry point {0} already defined for {1}'.format(ep.name, name)
+                raise DuplicateEntryPoint(msg)
+            found[ep.name] = ep.load()
+        return found
+
+    def get_project_types(self):
+        if len(self.project_types) == 0:
+            valid_types = {'project': 'freestyle',
+                           'matrix-project': 'matrix'}
+            for name, item in self._get_entry_points('jenkins_job_wrecker.projects').iteritems():
+                valid_types.update(item)
+            self.project_types.update(valid_types)
+        return self.project_types
 
     def register(self, component):
         mod = import_module('jenkins_job_wrecker.modules.{0}'.format(component))
@@ -22,8 +45,8 @@ class Registry(object):
         self.registry[component].update({name: obj
                                          for name, obj in getmembers(mod)
                                          if isfunction(obj)})
-        for ep in iter_entry_points(group='jenkins_job_wrecker.{0}'.format(component)):
-            self.registry[component].update({ep.name: ep.load()})
+        entry_points = self._get_entry_points('jenkins_job_wrecker.{0}'.format(component))
+        self.registry[component].update(entry_points)
 
     def dispatch(self, component, name, xml, parent):
         try:

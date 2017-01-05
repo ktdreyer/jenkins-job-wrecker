@@ -87,3 +87,18 @@ def shell(child, parent):
                                       "XML %s" % shell_element.tag)
 
     parent.append({'shell': shell})
+
+
+def batchfile(child, parent):
+    shell = ''
+    for shell_element in child:
+        # Assumption: there's only one <command> in this
+        # <hudson.tasks.Shell>
+        if shell_element.tag == 'command':
+            if shell_element.text is not None:
+                shell = str(shell_element.text)
+        else:
+            raise NotImplementedError("cannot handle "
+                                      "XML %s" % shell_element.tag)
+
+    parent.append({'batch': shell})
