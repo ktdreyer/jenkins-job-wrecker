@@ -1,5 +1,6 @@
+import xml.etree.ElementTree as ET
 import jenkins_job_wrecker.modules.base
-
+from jenkins_job_wrecker.registry import Registry
 
 class Handlers(jenkins_job_wrecker.modules.base.Base):
     component = 'handlers'
@@ -165,3 +166,18 @@ def customworkspace(top, parent):
 
 def jdk(top, parent):
     parent.append(['jdk',top.text])
+
+def definition(top, parent):
+    reg = Registry()
+    handlers = Handlers(reg)
+    # Create register
+    reg = Registry()
+    project_types = reg.get_project_types()
+
+    # sub-level "definition" data
+    definition = {}
+    parent.append(['definition', definition])
+    reg = Registry()
+    handlers = Handlers(reg)
+    handlers.gen_yml(definition, top)
+
