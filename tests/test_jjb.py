@@ -3,7 +3,7 @@ from jenkins_job_wrecker.cli import get_xml_root, root_to_yaml
 import os
 import pytest
 import tempfile
-#import jenkins_jobs.cmd
+import jenkins_jobs.cmd
 from subprocess import call
 
 fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures')
@@ -18,11 +18,10 @@ class TestJJB(object):
         yaml = root_to_yaml(root, jobname)
 
         # Run this wrecker YAML thru JJB.
-	# XXX: shelling out with call() sucks; use JJB's API instead
         temp = tempfile.NamedTemporaryFile()
         temp.write(yaml)
         temp.flush()
-        assert call(["jenkins-jobs", 'test', temp.name]) == 0
+        assert jenkins_jobs.cmd.main(['test', temp.name]) is None
         temp.close()
 
     def test_ice_setup(self):
