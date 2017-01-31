@@ -1,6 +1,6 @@
 # encoding=utf8
 import jenkins_job_wrecker.modules.base
-from jenkins_job_wrecker.helpers import get_bool
+from jenkins_job_wrecker.helpers import get_bool,gen_raw
 
 PARAMETER_MAPPER = {
     'stringparameterdefinition': 'string',
