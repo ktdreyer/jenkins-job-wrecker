@@ -20,7 +20,7 @@ def scmtrigger(top, parent):
         if child.tag == 'spec':
             pollscm['cron'] = child.text
         elif child.tag == 'ignorePostCommitHooks':
-            pollscm['ignore-post-commit-hooks'] = (setting.text == 'true')
+            pollscm['ignore-post-commit-hooks'] = (child.text == 'true')
         else:
             raise NotImplementedError('cannot handle scm trigger '
                                       'setting %s' % child.tag)
