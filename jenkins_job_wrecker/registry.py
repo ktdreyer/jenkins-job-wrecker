@@ -32,7 +32,8 @@ class Registry(object):
     def get_project_types(self):
         if len(self.project_types) == 0:
             valid_types = {'project': 'freestyle',
-                           'matrix-project': 'matrix'}
+                           'matrix-project': 'matrix',
+                           'flow-definition': 'flow'}
             for name, item in self._get_entry_points('jenkins_job_wrecker.projects').iteritems():
                 valid_types.update(item)
             self.project_types.update(valid_types)
