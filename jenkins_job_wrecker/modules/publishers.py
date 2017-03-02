@@ -1,4 +1,6 @@
 # encoding=utf8
+import re
+
 import jenkins_job_wrecker.modules.base
 from jenkins_job_wrecker.helpers import get_bool
 
