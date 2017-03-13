@@ -60,7 +60,7 @@ def parameters(top, parent):
                     parameter[key] = ''
                 elif setting.text == 'true' or setting.text == 'false':
                     parameter[key] = (setting.text == 'true')
-                elif param_type == 'choice':
+                elif param_type == 'choice' and setting.tag == 'choices':
                     choices = []
                     for sub_setting in setting:
                         if(sub_setting.attrib['class'] == 'string-array'):
