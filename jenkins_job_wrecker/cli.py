@@ -36,6 +36,7 @@ def str_presenter(dumper, data):
                                        style='|')
     return dumper.represent_scalar('tag:yaml.org,2002:str', data)
 
+
 yaml.add_representer(str, str_presenter)
 yaml.add_representer(literal_unicode, str_presenter)
 
