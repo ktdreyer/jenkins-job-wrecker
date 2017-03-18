@@ -1,4 +1,11 @@
 language: python
 install:
- - pip install jenkins-job-builder
+    # We have to upgrade pytest explicitly here due to the following:
+    # * Travis CI's virtualenv already comes with pytest preinstalled.
+    # * pytest-flake8 requires pytest>=2.8, and sometimes this requirement is
+    #   higher than what Travis CI has pre-installed into the virtualenv.
+    # * 'python setup.py test' uses EasyInstall, so it will not upgrade a
+    #   package to a newer version if the package is already present in a
+    #   virtualenv.
+  - pip install pytest-flake8
 script: python setup.py test

@@ -20,7 +20,7 @@ class PyTest(TestCommand):
 
     def run_tests(self):
         import pytest
-        errno = pytest.main('tests', self.pytest_args)
+        errno = pytest.main('jenkins_job_wrecker --flake8 ', self.pytest_args)
         sys.exit(errno)
 
 
@@ -87,6 +87,7 @@ setup(name="jenkins-job-wrecker",
       },
       tests_require=[
           'pytest',
+          'pytest-flake8',
           'jenkins-job-builder',
       ],
       cmdclass={
