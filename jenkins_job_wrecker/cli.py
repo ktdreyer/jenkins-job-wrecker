@@ -26,14 +26,15 @@ class literal_unicode(unicode):
 
 
 def str_presenter(dumper, data):
-  if len(data.splitlines()) > 1:  # check for multiline string
-    # The dumper will not respect "style='|'" if it detects trailing
-    # whitespace on any line within the data. For scripts the trailing
-    # whitespace is not important.
-    lines = [l.strip() for l in data.splitlines()]
-    data = '\n'.join(lines)
-    return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='|')
-  return dumper.represent_scalar('tag:yaml.org,2002:str', data)
+    if len(data.splitlines()) > 1:  # check for multiline string
+        # The dumper will not respect "style='|'" if it detects trailing
+        # whitespace on any line within the data. For scripts the trailing
+        # whitespace is not important.
+        lines = [l.strip() for l in data.splitlines()]
+        data = '\n'.join(lines)
+        return dumper.represent_scalar('tag:yaml.org,2002:str', data,
+                                       style='|')
+    return dumper.represent_scalar('tag:yaml.org,2002:str', data)
 
 yaml.add_representer(str, str_presenter)
 yaml.add_representer(literal_unicode, str_presenter)
