@@ -26,7 +26,7 @@ class Scm(jenkins_job_wrecker.modules.base.Base):
             self.registry.dispatch(self.component, scm_class, data, scm)
             yml_parent.append(['scm', scm])
             return
-            
+
         raise NotImplementedError('%s scm not supported' % data.attrib['class'])
 
 

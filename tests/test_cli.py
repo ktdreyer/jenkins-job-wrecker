@@ -9,7 +9,7 @@ ice_setup_xml_file = os.path.join(fixtures_path, 'ice-setup.xml')
 
 
 class TestArgParser(object):
-    
+
     # "-f" tests
 
     def test_missing_filename(self):
