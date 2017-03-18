@@ -12,7 +12,6 @@ class Scm(jenkins_job_wrecker.modules.base.Base):
             if data.attrib['class'] == 'hudson.scm.NullSCM':
                 return None
             if data.attrib['class'] == 'org.jenkinsci.plugins.multiplescms.MultiSCM':
-                scms = []
                 for scm in data[0]:
                     self.gen_yml(yml_parent, scm)
                 return
