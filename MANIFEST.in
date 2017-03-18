@@ -1,3 +1,2 @@
 include setup.py
-include README.md
 include LICENSE
