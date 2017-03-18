@@ -175,7 +175,6 @@ def definition(top, parent):
     handlers = Handlers(reg)
     # Create register
     reg = Registry()
-    project_types = reg.get_project_types()
 
     # sub-level "definition" data
     definition = {}
