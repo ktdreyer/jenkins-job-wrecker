@@ -224,7 +224,7 @@ def groovypostbuildrecorder(top, parent):
         else:
             continue # WTF is this?
             raise NotImplementedError("cannot handle groovy-postbuild elements")
-    parent.append({'groovy-postbuild':groovy})
+    parent.append({'groovy-postbuild': groovy})
 
 
 def slacknotifier(top, parent):

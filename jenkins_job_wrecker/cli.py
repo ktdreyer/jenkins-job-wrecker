@@ -82,7 +82,7 @@ def root_to_yaml(root, name):
 
         raw = {}
         raw['xml'] = ET.tostring(root)
-        job['xml'] = {'raw':raw}
+        job['xml'] = {'raw': raw}
 
     return yaml.dump(build, default_flow_style=False, default_style=None)
 

@@ -84,7 +84,8 @@ def axes(top, parent):
         'hudson.matrix.LabelExpAxis': 'label-expression',
         'hudson.matrix.LabelAxis': 'slave',
         'hudson.matrix.TextAxis': 'user-defined',
-        'jenkins.plugins.shiningpanda.matrix.PythonAxis': 'python',}
+        'jenkins.plugins.shiningpanda.matrix.PythonAxis': 'python',
+    }
     for child in top:
         try:
             axis = {'type': mapper[child.tag]}
@@ -167,7 +168,7 @@ def customworkspace(top, parent):
 
 
 def jdk(top, parent):
-    parent.append(['jdk',top.text])
+    parent.append(['jdk', top.text])
 
 
 def definition(top, parent):
