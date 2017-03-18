@@ -9,4 +9,3 @@ class Scriptpath(jenkins_job_wrecker.modules.base.Base):
 
         scriptPath = ""
         yml_parent.append(['scriptPath', data.text])
-

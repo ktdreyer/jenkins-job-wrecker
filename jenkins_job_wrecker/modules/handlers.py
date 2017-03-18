@@ -183,4 +183,3 @@ def definition(top, parent):
     reg = Registry()
     handlers = Handlers(reg)
     handlers.gen_yml(definition, top)
-

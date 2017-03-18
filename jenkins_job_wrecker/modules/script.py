@@ -7,4 +7,3 @@ class Script(jenkins_job_wrecker.modules.base.Base):
 
     def gen_yml(self, yml_parent, data):
         yml_parent.append(['script', data.text])
-
