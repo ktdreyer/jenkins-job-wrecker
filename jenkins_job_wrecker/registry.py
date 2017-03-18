@@ -67,7 +67,7 @@ class Registry(object):
         self.registry['handlers'] = {}
         pkgpath = dirname(jenkins_job_wrecker.modules.__file__)
         for name in [name
-                     for  _, name, _ in iter_modules([pkgpath])
+                     for _, name, _ in iter_modules([pkgpath])
                      if name not in ['handlers', 'base']]:
             my_mod = import_module('jenkins_job_wrecker.modules.%s' % name)
             my_obj = getattr(my_mod, name.capitalize())
