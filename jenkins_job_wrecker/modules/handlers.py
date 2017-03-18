@@ -1,4 +1,3 @@
-import xml.etree.ElementTree as ET
 import jenkins_job_wrecker.modules.base
 from jenkins_job_wrecker.registry import Registry
 
