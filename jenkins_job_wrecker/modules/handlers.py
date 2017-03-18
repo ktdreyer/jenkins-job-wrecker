@@ -2,6 +2,7 @@ import xml.etree.ElementTree as ET
 import jenkins_job_wrecker.modules.base
 from jenkins_job_wrecker.registry import Registry
 
+
 class Handlers(jenkins_job_wrecker.modules.base.Base):
     component = 'handlers'
 
@@ -164,8 +165,10 @@ def scmcheckoutretrycount(top, parent):
 def customworkspace(top, parent):
     parent.append(['workspace', top.text])
 
+
 def jdk(top, parent):
     parent.append(['jdk',top.text])
+
 
 def definition(top, parent):
     reg = Registry()

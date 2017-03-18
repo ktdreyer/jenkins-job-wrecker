@@ -7,6 +7,7 @@ fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures')
 
 ice_setup_xml_file = os.path.join(fixtures_path, 'ice-setup.xml')
 
+
 class TestArgParser(object):
     
     # "-f" tests

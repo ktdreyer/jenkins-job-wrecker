@@ -20,8 +20,10 @@ if is_py_v2:
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger('jjwrecker')
 
+
 class literal_unicode(unicode):
     pass
+
 
 def str_presenter(dumper, data):
   if len(data.splitlines()) > 1:  # check for multiline string

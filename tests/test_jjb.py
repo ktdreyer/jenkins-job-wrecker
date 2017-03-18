@@ -8,6 +8,7 @@ from subprocess import call
 
 fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures')
 
+
 class TestJJB(object):
 
     def run_jjb(self, name, jobname=None):

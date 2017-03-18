@@ -73,6 +73,7 @@ def parameters(top, parent):
                     parameter[key] = setting.text
             parent.append({param_type: parameter})
 
+
 def throttlejobproperty(top, parent):
     throttle = {}
     for child in top:
