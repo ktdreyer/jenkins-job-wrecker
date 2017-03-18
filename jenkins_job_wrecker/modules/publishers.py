@@ -99,8 +99,7 @@ def extendedemailpublisher(top, parent):
         elif element.tag == 'configuredTriggers':
             print "IGNORED configuredTriggers in email-ext"
         else:
-            raise NotImplementedError("cannot handle "
-                                          "XML %s" % element.tag)
+            raise NotImplementedError("cannot handle XML %s" % element.tag)
 
     parent.append({'email-ext': ext_email})
 
