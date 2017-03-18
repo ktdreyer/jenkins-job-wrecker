@@ -1,5 +1,4 @@
 # encoding=utf8
-from helpers import gen_raw
 from importlib import import_module
 from inspect import getmembers, isfunction, isclass
 from jenkins_job_wrecker.helpers import gen_raw
