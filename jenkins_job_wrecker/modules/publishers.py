@@ -222,7 +222,7 @@ def groovypostbuildrecorder(top, parent):
                         classpaths.append(child2.text)
             groovy['classpath'] = classpaths;
         else:
-            continue # WTF is this?
+            continue  # WTF is this?
             raise NotImplementedError("cannot handle groovy-postbuild elements")
     parent.append({'groovy-postbuild': groovy})
 

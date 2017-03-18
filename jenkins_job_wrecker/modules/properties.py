@@ -89,7 +89,7 @@ def throttlejobproperty(top, parent):
         elif child.tag == 'categories':
             throttle['categories'] = []
         elif child.tag == 'configVersion':
-            pass # assigned by jjb
+            pass  # assigned by jjb
         else:
             raise NotImplementedError("cannot handle XML %s" % child.tag)
 
