@@ -51,7 +51,7 @@ def copyartifact(child, parent):
         else:
             raise NotImplementedError("cannot handle "
                                       "XML %s" % copy_element.tag)
-            
+
     parent.append({'copyartifact': copyartifact})
 
 

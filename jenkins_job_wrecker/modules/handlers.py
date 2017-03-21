@@ -1,6 +1,6 @@
-import xml.etree.ElementTree as ET
 import jenkins_job_wrecker.modules.base
 from jenkins_job_wrecker.registry import Registry
+
 
 class Handlers(jenkins_job_wrecker.modules.base.Base):
     component = 'handlers'
@@ -83,7 +83,8 @@ def axes(top, parent):
         'hudson.matrix.LabelExpAxis': 'label-expression',
         'hudson.matrix.LabelAxis': 'slave',
         'hudson.matrix.TextAxis': 'user-defined',
-        'jenkins.plugins.shiningpanda.matrix.PythonAxis': 'python',}
+        'jenkins.plugins.shiningpanda.matrix.PythonAxis': 'python',
+    }
     for child in top:
         try:
             axis = {'type': mapper[child.tag]}
@@ -164,15 +165,16 @@ def scmcheckoutretrycount(top, parent):
 def customworkspace(top, parent):
     parent.append(['workspace', top.text])
 
+
 def jdk(top, parent):
-    parent.append(['jdk',top.text])
+    parent.append(['jdk', top.text])
+
 
 def definition(top, parent):
     reg = Registry()
     handlers = Handlers(reg)
     # Create register
     reg = Registry()
-    project_types = reg.get_project_types()
 
     # sub-level "definition" data
     definition = {}
@@ -180,4 +182,3 @@ def definition(top, parent):
     reg = Registry()
     handlers = Handlers(reg)
     handlers.gen_yml(definition, top)
-

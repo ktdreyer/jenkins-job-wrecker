@@ -20,17 +20,22 @@ if is_py_v2:
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger('jjwrecker')
 
-class literal_unicode(unicode): pass
+
+class literal_unicode(unicode):
+    pass
+
 
 def str_presenter(dumper, data):
-  if len(data.splitlines()) > 1:  # check for multiline string
-    # The dumper will not respect "style='|'" if it detects trailing
-    # whitespace on any line within the data. For scripts the trailing
-    # whitespace is not important.
-    lines = [l.strip() for l in data.splitlines()]
-    data = '\n'.join(lines)
-    return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='|')
-  return dumper.represent_scalar('tag:yaml.org,2002:str', data)
+    if len(data.splitlines()) > 1:  # check for multiline string
+        # The dumper will not respect "style='|'" if it detects trailing
+        # whitespace on any line within the data. For scripts the trailing
+        # whitespace is not important.
+        lines = [l.strip() for l in data.splitlines()]
+        data = '\n'.join(lines)
+        return dumper.represent_scalar('tag:yaml.org,2002:str', data,
+                                       style='|')
+    return dumper.represent_scalar('tag:yaml.org,2002:str', data)
+
 
 yaml.add_representer(str, str_presenter)
 yaml.add_representer(literal_unicode, str_presenter)
@@ -78,7 +83,7 @@ def root_to_yaml(root, name):
 
         raw = {}
         raw['xml'] = ET.tostring(root)
-        job['xml'] = {'raw':raw}
+        job['xml'] = {'raw': raw}
 
     return yaml.dump(build, default_flow_style=False, default_style=None)
 

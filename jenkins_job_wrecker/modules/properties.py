@@ -1,13 +1,14 @@
 # encoding=utf8
 import jenkins_job_wrecker.modules.base
-from jenkins_job_wrecker.helpers import get_bool,gen_raw
+from jenkins_job_wrecker.helpers import get_bool, gen_raw
 
 PARAMETER_MAPPER = {
     'stringparameterdefinition': 'string',
     'booleanparameterdefinition': 'bool',
     'choiceparameterdefinition': 'choice',
     'textparameterdefinition': 'text',
-    'fileparameterdefinition': 'file',}
+    'fileparameterdefinition': 'file',
+}
 
 
 class Properties(jenkins_job_wrecker.modules.base.Base):
@@ -50,7 +51,7 @@ def parameters(top, parent):
         for param in params:
             param_name = param.tag.split('.')[-1].lower()
             if param_name not in PARAMETER_MAPPER:
-                gen_raw(param,parent)
+                gen_raw(param, parent)
                 continue
             param_type = PARAMETER_MAPPER[param_name]
             parameter = {}
@@ -73,6 +74,7 @@ def parameters(top, parent):
                     parameter[key] = setting.text
             parent.append({param_type: parameter})
 
+
 def throttlejobproperty(top, parent):
     throttle = {}
     for child in top:
@@ -87,23 +89,23 @@ def throttlejobproperty(top, parent):
         elif child.tag == 'categories':
             throttle['categories'] = []
         elif child.tag == 'configVersion':
-            pass # assigned by jjb
+            pass  # assigned by jjb
         else:
             raise NotImplementedError("cannot handle XML %s" % child.tag)
 
-    parent.append({'throttle':throttle})
+    parent.append({'throttle': throttle})
 
 
 def slacknotifierslackjobproperty(top, parent):
     slack = {}
     notifications = {
-        "notifySuccess":"notify-success",
-        "notifyAborted":"notify-aborted",
-        "notifyNotBuilt":"notify-not-built",
-        "notifyUnstable":"notify-unstable",
-        "notifyFailure":"notify-failure",
-        "notifyBackToNormal":"notify-back-to-normal",
-        "notifyRepeatedFailure":"notify-repeated-failure"
+        "notifySuccess": "notify-success",
+        "notifyAborted": "notify-aborted",
+        "notifyNotBuilt": "notify-not-built",
+        "notifyUnstable": "notify-unstable",
+        "notifyFailure": "notify-failure",
+        "notifyBackToNormal": "notify-back-to-normal",
+        "notifyRepeatedFailure": "notify-repeated-failure"
     }
     for child in top:
         if child.tag == 'teamDomain':

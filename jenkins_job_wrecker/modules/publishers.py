@@ -99,8 +99,7 @@ def extendedemailpublisher(top, parent):
         elif element.tag == 'configuredTriggers':
             print "IGNORED configuredTriggers in email-ext"
         else:
-            raise NotImplementedError("cannot handle "
-                                          "XML %s" % element.tag)
+            raise NotImplementedError("cannot handle XML %s" % element.tag)
 
     parent.append({'email-ext': ext_email})
 
@@ -220,11 +219,11 @@ def groovypostbuildrecorder(top, parent):
                 for child2 in child1:
                     if child2.tag == 'path':
                         classpaths.append(child2.text)
-            groovy['classpath'] = classpaths;
+            groovy['classpath'] = classpaths
         else:
-            continue # WTF is this?
+            continue  # WTF is this?
             raise NotImplementedError("cannot handle groovy-postbuild elements")
-    parent.append({'groovy-postbuild':groovy})
+    parent.append({'groovy-postbuild': groovy})
 
 
 def slacknotifier(top, parent):

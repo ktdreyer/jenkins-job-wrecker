@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 from jenkins_job_wrecker.cli import get_xml_root, root_to_yaml
 import os
-import pytest
 import tempfile
 import jenkins_jobs.cmd
-from subprocess import call
 
 fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures')
+
 
 class TestJJB(object):
 
