@@ -124,13 +124,13 @@ def buildtrigger(top, parent):
     build_trigger = {}
 
     for element in top:
-        if element.tag == 'configs' and len(list(top)) == 1:
-            build_trigger = []
+        if element.tag == 'configs':
+            build_triggers = []
             for sub in element:
                 project = {}
                 for config in sub:
                     if config.tag == 'projects':
-                        project['project'] = config.text.split(',')
+                        project['project'] = config.text
                     elif (config.tag == 'condition' and
                           config.text in ['SUCCESS', 'UNSTABLE', 'FAILED_OR_BETTER',
                                           'UNSTABLE_OR_BETTER', 'UNSTABLE_OR_WORSE',
@@ -140,13 +140,17 @@ def buildtrigger(top, parent):
                         project['trigger-with-no-params'] = \
                             (config.text == 'true')
                     elif config.tag == 'configs':
-                        pass
+                        for subconf in config:
+                            if subconf.tag == 'hudson.plugins.parameterizedtrigger.PredefinedBuildParameters':
+                                for bottom in subconf:
+                                    if bottom.tag == 'properties':
+                                        project['predefined-paramters'] = bottom.text
                     else:
                         raise NotImplementedError("cannot handle "
                                                   "XML %s" % config.tag)
-                build_trigger.append(project)
+                build_triggers.append(project)
 
-            parent.append({'trigger-parameterized-builds': build_trigger})
+            parent.append({'trigger-parameterized-builds': build_triggers})
             return
         elif element.tag == 'childProjects':
             build_trigger['project'] = element.text
