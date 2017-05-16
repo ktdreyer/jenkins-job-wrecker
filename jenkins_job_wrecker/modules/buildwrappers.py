@@ -46,7 +46,69 @@ def envinjectbuildwrapper(top, parent):
 
 
 def buildtimeoutwrapper(top, parent):
-    pass
+    FAIL = 'hudson.plugins.build__timeout.operations.FailOperation'
+    DESC = 'hudson.plugins.build__timeout.operations.WriteDescriptionOperation'
+    ABORT = 'hudson.plugins.build__timeout.operations.AbortOperation'
+    ABSOLUTE = 'hudson.plugins.build_timeout.impl.AbsoluteTimeOutStrategy'
+    DEADLINE = 'hudson.plugins.build_timeout.impl.DeadlineTimeOutStrategy'
+    ELASTIC = 'hudson.plugins.build_timeout.impl.ElasticTimeOutStrategy'
+    STUCK = 'hudson.plugins.build_timeout.impl.LikelyStuckTimeOutStrategy'
+    ACTIVITY = 'hudson.plugins.build_timeout.impl.NoActivityTimeOutStrategy'
+
+    timeout_inject = {}
+    for element in top:
+        if element.tag == 'strategy':
+            if element.get('class') == ABSOLUTE:
+                timeout_inject['type'] = 'absolute'
+            elif element.get('class') == DEADLINE:
+                timeout_inject['type'] = 'deadline'
+            elif element.get('class') == ELASTIC:
+                timeout_inject['type'] = 'elastic'
+            elif element.get('class') == STUCK:
+                timeout_inject['type'] = 'likely-stuck'
+            elif element.get('class') == ACTIVITY:
+                timeout_inject['type'] = 'no-activity'
+            for subelement in element:
+                if subelement.tag == 'timeoutMinutes':
+                    timeout_inject['timeout'] = int(subelement.text)
+                elif subelement.tag == 'timeoutSecondsString':
+                    timeout_inject['timeout'] = int(subelement.text) / 60
+                elif subelement.tag == 'deadlineToleranceInMinutes':
+                    timeout_inject['deadline-tolerance'] = int(subelement.text)
+                elif subelement.tag == 'timeoutPercentage':
+                    timeout_inject['elastic-percentage'] = int(subelement.text)
+                elif subelement.tag == 'numberOfBuilds':
+                    timeout_inject['elastic-number-builds'] = \
+                        int(subelement.text)
+                elif subelement.tag == 'timeoutMinutesElasticDefault':
+                    timeout_inject['elastic-default-timeout'] = \
+                        int(subelement.text)
+                elif subelement.tag == 'deadlineTime':
+                    timeout_inject['deadline-time'] = subelement.text
+                elif subelement.tag == 'failSafeTimeoutDuration':
+                    pass
+                else:
+                    raise NotImplementedError("cannot handle "
+                                              "XML %s" % subelement.tag)
+        elif element.tag == 'operationList':
+            for subelement in element:
+                if subelement.tag == FAIL:
+                    timeout_inject['fail'] = True
+                elif subelement.tag == ABORT:
+                    timeout_inject['abort'] = True
+                elif subelement.tag == DESC:
+                    description = subelement.find('description')
+                    if description is not None:
+                        timeout_inject['write-description'] = description.text
+                else:
+                    raise NotImplementedError("cannot handle "
+                                              "XML %s" % subelement.tag)
+        elif element.tag == 'timeoutEnvVar':
+            timeout_inject['timeout-var'] = element.text
+        else:
+            raise NotImplementedError("cannot handle XML %s" % element.tag)
+
+    parent.append({'timeout': timeout_inject})
 
 
 def ansicolorbuildwrapper(top, parent):
