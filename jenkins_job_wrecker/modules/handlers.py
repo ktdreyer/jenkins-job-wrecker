@@ -108,7 +108,7 @@ def executionstrategy(top, parent):
     for child in top:
 
         if child.tag == 'runSequentially':
-            strategy['run-sequentially'] = (child.text == 'true')
+            strategy['sequential'] = (child.text == 'true')
         elif child.tag == 'sorter':
             # Is there anything but NOOP?
             pass
