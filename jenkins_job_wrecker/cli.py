@@ -115,6 +115,11 @@ def parse_args(args):
         help='Ignore some jobs in conversion.'
     )
     parser.add_argument(
+        '-o', '--output-dir',
+        default='output',
+        help='folder to store generated job definitions'
+    )
+    parser.add_argument(
         '-v', '--verbose',
         action='store_true', default=None,
         help='show more output on the console'
@@ -149,7 +154,7 @@ def main():
 
     # Args are ok. Proceed with writing output
     try:
-        os.mkdir('output')
+        os.mkdir(args.output_dir)
     # We don't care if "output" dir already exists.
     except OSError as exception:
         if exception.errno != errno.EEXIST:
@@ -160,7 +165,7 @@ def main():
         root = get_xml_root(filename=args.filename)
         yaml = root_to_yaml(root, args.name)
         # Create output directory structure where needed
-        yaml_filename = os.path.join('output', args.name + '.yml')
+        yaml_filename = os.path.join(args.output_dir, args.name + '.yml')
         path = os.path.dirname(yaml_filename)
         try:
             os.makedirs(path)
