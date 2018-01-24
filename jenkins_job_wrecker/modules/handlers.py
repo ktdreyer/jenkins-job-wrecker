@@ -131,6 +131,8 @@ def logrotator(top, parent):
             logrotate['artifactDaysToKeep'] = child.text
         elif child.tag == 'artifactNumToKeep':
             logrotate['artifactNumToKeep'] = child.text
+        elif child.tag == 'discardOnlyOnSuccess':
+            logrotate['discardOnlyOnSuccess'] = child.text
         else:
             raise NotImplementedError("cannot handle XML %s" % child.tag)
 
