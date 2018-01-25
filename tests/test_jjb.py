@@ -2,7 +2,7 @@
 from jenkins_job_wrecker.cli import get_xml_root, root_to_yaml
 import os
 import tempfile
-import jenkins_jobs.cmd
+from jenkins_jobs.cli.entry import JenkinsJobs
 
 fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures')
 
@@ -20,7 +20,8 @@ class TestJJB(object):
         temp = tempfile.NamedTemporaryFile()
         temp.write(yaml)
         temp.flush()
-        assert jenkins_jobs.cmd.main(['test', temp.name]) is None
+        jjb = JenkinsJobs(['test', temp.name])
+        assert jjb.execute() is None
         temp.close()
 
     def test_ice_setup(self):
