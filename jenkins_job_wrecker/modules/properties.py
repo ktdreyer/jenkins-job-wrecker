@@ -1,6 +1,7 @@
 # encoding=utf8
 import jenkins_job_wrecker.modules.base
 from jenkins_job_wrecker.helpers import get_bool, gen_raw
+from jenkins_job_wrecker.modules.triggers import Triggers
 
 PARAMETER_MAPPER = {
     'stringparameterdefinition': 'string',
@@ -22,6 +23,14 @@ class Properties(jenkins_job_wrecker.modules.base.Base):
             object_name = object_name.replace('-', '').replace('_', '')
             if object_name == 'parametersdefinitionproperty':
                 self.registry.dispatch(self.component, 'parameters', child, parameters)
+                continue
+            elif object_name == 'pipelinetriggersjobproperty':
+                # Pipeline scripts put triggers in properties section
+                trigger = Triggers(self.registry)
+                for grandchild in child:
+                    # Find the triggers tag and then generate the yaml
+                    if grandchild.tag == 'triggers':
+                        trigger.gen_yml(yml_parent, grandchild)
                 continue
             self.registry.dispatch(self.component, object_name, child, properties)
 

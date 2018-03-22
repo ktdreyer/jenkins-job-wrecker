@@ -16,8 +16,9 @@ class Registry(object):
     registry = {}
     project_types = {}
 
-    def __init__(self):
+    def __init__(self, ignore_actions=False):
         self.__handlers()
+        self.ignore_actions = ignore_actions
 
     def _get_entry_points(self, name):
         found = {}
@@ -32,7 +33,9 @@ class Registry(object):
         if len(self.project_types) == 0:
             valid_types = {'project': 'freestyle',
                            'matrix-project': 'matrix',
-                           'com.cloudbees.plugins.flow.BuildFlow': 'flow'}
+                           'com.cloudbees.plugins.flow.BuildFlow': 'flow',
+                           'flow-definition': 'pipeline',
+                           'com.cloudbees.hudson.plugins.folder.Folder': 'folder'}
             for name, item in self._get_entry_points('jenkins_job_wrecker.projects').iteritems():
                 valid_types.update(item)
             self.project_types.update(valid_types)
@@ -58,8 +61,11 @@ class Registry(object):
                 handler = my_obj(self)
                 handler.gen_yml(parent, xml)
                 return
-        except (KeyError, NotImplementedError):
-            if component == 'handlers':
+        except (KeyError, NotImplementedError) as e:
+            if self.ignore_actions and name == 'actions':
+                print('WARNING: {0} Ignoring because of -a...'.format(e))
+                return
+            elif component == 'handlers':
                 raise
             gen_raw(xml, parent)
 

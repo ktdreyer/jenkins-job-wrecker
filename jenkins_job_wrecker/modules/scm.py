@@ -187,6 +187,18 @@ def gitscm(top, parent):
                     git['local-branch'] = extension[0].text
                 elif extension.tag == 'hudson.plugins.git.extensions.impl.PerBuildTag':
                     pass
+                elif extension.tag == 'hudson.plugins.git.extensions.impl.CleanBeforeCheckout':
+                    clean_dict = {'before': True}
+                    if 'clean' in git:  # after has already been added
+                        git['clean'].update(clean_dict)
+                    else:  # Need to create dict for git['clean']
+                        git['clean'] = clean_dict
+                elif extension.tag == 'hudson.plugins.git.extensions.impl.CleanAfterCheckout':
+                    clean_dict = {'after': True}
+                    if 'clean' in git:  # before has already been added
+                        git['clean'].update(clean_dict)
+                    else:  # Need to create dict for git['clean']
+                        git['clean'] = clean_dict
                 else:
                     raise NotImplementedError("%s not supported" % extension.tag)
 
