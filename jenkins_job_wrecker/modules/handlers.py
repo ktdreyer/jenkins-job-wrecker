@@ -16,6 +16,8 @@ class Handlers(jenkins_job_wrecker.modules.base.Base):
                 for setting in settings:
                     key, value = setting
                     if key in yml_parent:
+                        if not value:
+                            continue
                         yml_parent[key].append(value[0])
                     else:
                         yml_parent[key] = value
@@ -180,7 +182,11 @@ def definition(top, parent):
 
     # sub-level "definition" data
     definition = {}
-    parent.append(['definition', definition])
+    if 'class' in top.attrib:  # Pipeline scm
+        if top.attrib['class'] == 'org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition':
+            parent.append(['pipeline-scm', definition])
+    else:
+        parent.append(['definition', definition])
     reg = Registry()
     handlers = Handlers(reg)
     handlers.gen_yml(definition, top)

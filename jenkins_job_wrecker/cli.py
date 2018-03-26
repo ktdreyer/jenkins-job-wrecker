@@ -54,7 +54,7 @@ def get_xml_root(filename=False, string=False):
 
 
 # Walk an XML ElementTree ("root"), and return a YAML string
-def root_to_yaml(root, name):
+def root_to_yaml(root, name, ignore_actions=False):
     # Top-level "job" data
     job = {}
     build = [{'job': job}]
@@ -73,9 +73,10 @@ def root_to_yaml(root, name):
         # Handle each top-level XML element with custom modules/functions in
         # modules/handlers.py
         # registry determines difference at runtime
-        reg = Registry()
-        handlers = Handlers(reg)
-        handlers.gen_yml(job, root)
+        if job['project-type'] != 'folder':
+            reg = Registry(ignore_actions=ignore_actions)
+            handlers = Handlers(reg)
+            handlers.gen_yml(job, root)
     else:
         # Project type not currently supported, so output as raw XML
         if 'maven' in root.tag:
@@ -123,6 +124,12 @@ def parse_args(args):
         '-v', '--verbose',
         action='store_true', default=None,
         help='show more output on the console'
+    )
+    parser.add_argument(
+        '-a', '--ignore-actions-tag',
+        action='store_true', default=False,
+        help="will ignore the action tag values if there are any. Continues"
+             " past NotImplementedError exception for <actions> tags"
     )
     return parser.parse_args(args)
 
@@ -199,27 +206,27 @@ def main():
         if args.name:
             job_names = [args.name]
         else:
-            job_names = []
-            for job in server.get_jobs():
-
+            job_names = {}  # {'name':'fullname'}
+            # Folder depth of None means go down indefinitely
+            for job in server.get_jobs(folder_depth=None):
                 if args.ignore and job['name'] in args.ignore:
                     log.info('Ignoring \"%s\" as requested...' % job['name'])
                     continue
 
-                job_names.append(job['name'])
+                job_names[job['name']] = job['fullname']
 
         # write YAML
-        for name in job_names:
-            log.info('looking up job "%s"' % name)
+        for name, fullname in job_names.items():
+            log.info('looking up job "%s"' % fullname)
             # Get a job's XML
-            xml = server.get_job_config(name)
+            xml = server.get_job_config(fullname)
             log.debug(xml)
             # Convert XML to YAML
             root = get_xml_root(string=xml)
             log.info('converting job "%s" to YAML' % name)
-            yaml = root_to_yaml(root, name)
+            yaml = root_to_yaml(root, name, args.ignore_actions_tag)
             # Create output directory structure where needed
-            yaml_filename = os.path.join('output', name + '.yml')
+            yaml_filename = os.path.join('output', fullname + '.yml')
             path = os.path.dirname(yaml_filename)
             try:
                 os.makedirs(path)
