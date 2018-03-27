@@ -1,5 +1,6 @@
 import jenkins_job_wrecker.modules.base
 from jenkins_job_wrecker.registry import Registry
+from jenkins_job_wrecker.helpers import get_bool
 
 
 class Handlers(jenkins_job_wrecker.modules.base.Base):
@@ -182,9 +183,19 @@ def definition(top, parent):
 
     # sub-level "definition" data
     definition = {}
-    if 'class' in top.attrib:  # Pipeline scm
+    if 'class' in top.attrib:  # Pipeline script
         if top.attrib['class'] == 'org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition':
+            #  Using pipeline-scm (getting jenkinsfile from repo)
             parent.append(['pipeline-scm', definition])
+        elif top.attrib['class'] == 'org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition':
+            # Using DSL (passing raw pipeline script)
+            for child in top.getchildren():
+                if child.tag == 'script':
+                    parent.append(['dsl', child.text])
+                elif child.tag == 'sandbox':
+                    parent.append(['sandbox', get_bool(child.text)])
+            # Don't pass anything to handlers.gen_yml, handled it here
+            top = ''
     else:
         parent.append(['definition', definition])
     reg = Registry()
