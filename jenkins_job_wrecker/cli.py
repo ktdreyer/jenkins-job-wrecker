@@ -206,25 +206,25 @@ def main():
         if args.name:
             job_names = [args.name]
         else:
-            job_names = {}  # {'name':'fullname'}
+            job_names = []
             # Folder depth of None means go down indefinitely
             for job in server.get_jobs(folder_depth=None):
                 if args.ignore and job['name'] in args.ignore:
                     log.info('Ignoring \"%s\" as requested...' % job['name'])
                     continue
 
-                job_names[job['name']] = job['fullname']
+                job_names.append(job['fullname'])
 
         # write YAML
-        for name, fullname in job_names.items():
+        for fullname in job_names:
             log.info('looking up job "%s"' % fullname)
             # Get a job's XML
             xml = server.get_job_config(fullname)
             log.debug(xml)
             # Convert XML to YAML
             root = get_xml_root(string=xml)
-            log.info('converting job "%s" to YAML' % name)
-            yaml = root_to_yaml(root, name, args.ignore_actions_tag)
+            log.info('converting job "%s" to YAML' % fullname)
+            yaml = root_to_yaml(root, fullname, args.ignore_actions_tag)
             # Create output directory structure where needed
             yaml_filename = os.path.join('output', fullname + '.yml')
             path = os.path.dirname(yaml_filename)
