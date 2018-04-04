@@ -53,6 +53,55 @@ def githubprojectproperty(top, parent):
     parent.append({'github': github})
 
 
+def envinjectjobproperty(top, parent):
+    env_info = {}
+    for child in top:
+        if child.tag == 'info':
+            for grandchild in child:
+                if grandchild.tag == 'loadFilesFromMaster':
+                    env_info['load-from-master'] = get_bool(grandchild.text)
+                elif grandchild.tag == 'groovyScriptContent':
+                    if grandchild.text:
+                        env_info['groovy-content'] = grandchild.text
+                elif grandchild.tag == 'secureGroovyScript':
+                    for ggchild in grandchild:
+                        if ggchild.tag == 'script':
+                            if ggchild.text:
+                                env_info['groovy-content'] = ggchild.text
+                        elif ggchild.tag == 'sandbox':
+                            # No support in jjb for this, fail quietly for
+                            # this one
+                            pass
+                        else:
+                            raise NotImplementedError("cannot handle XML %s" % ggchild.tag)
+                elif grandchild.tag == 'scriptContent':
+                    if grandchild.text:
+                        env_info['script-content'] = grandchild.text
+                elif grandchild.tag == 'scriptFilePath':
+                    if grandchild.text:
+                        env_info['script-file'] = grandchild.text
+                elif grandchild.tag == 'propertiesContent':
+                    if grandchild.text:
+                        env_info['properties-content'] = grandchild.text
+                elif grandchild.tag == 'propertiesFilePath':
+                    if grandchild.text:
+                        env_info['properties-file'] = grandchild.text
+                else:
+                    raise NotImplementedError("cannot handle XML %s" % grandchild.tag)
+        elif child.tag == 'on':
+            env_info['enabled'] = get_bool(child.text)
+        elif child.tag == 'keepJenkinsSystemVariables':
+            env_info['keep-system-variables'] = get_bool(child.text)
+        elif child.tag == 'keepBuildVariables':
+            env_info['keep-build-variables'] = get_bool(child.text)
+        elif child.tag == 'overrideBuildParameters':
+            env_info['override-build-parameters'] = get_bool(child.text)
+        else:
+            raise NotImplementedError("cannot handle XML %s" % child.tag)
+
+    parent.append({'inject': env_info})
+
+
 def parameters(top, parent):
     for params in top:
         if params.tag != 'parameterDefinitions':
