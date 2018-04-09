@@ -75,6 +75,7 @@ class ReleaseCommand(Command):
         print(' '.join(cmd))
         subprocess.check_call(cmd)
 
+
 setup(name="jenkins-job-wrecker",
       version=version,
       description=('convert Jenkins XML to YAML'),
