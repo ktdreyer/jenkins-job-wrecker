@@ -55,10 +55,23 @@ class ReleaseCommand(Command):
         print(' '.join(cmd))
         subprocess.check_call(cmd)
 
-        # Push package to pypi
-        cmd = ['python', 'setup.py', 'sdist', 'upload']
+        # Create source package
+        cmd = ['python', 'setup.py', 'sdist']
+        print(' '.join(cmd))
+        subprocess.check_call(cmd)
+
+        tarball = 'dist/%s-%s.tar.gz' % ('jenkins-job-wrecker', version)
+
+        # GPG sign
         if self.sign:
-            cmd.append('--sign')
+            cmd = ['gpg2', '-b', '-a', tarball]
+            print(' '.join(cmd))
+            subprocess.check_call(cmd)
+
+        # Upload
+        cmd = ['twine', 'upload', tarball]
+        if self.sign:
+            cmd.append(tarball + '.asc')
         print(' '.join(cmd))
         subprocess.check_call(cmd)
 
