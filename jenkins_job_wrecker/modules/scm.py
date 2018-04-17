@@ -199,6 +199,14 @@ def gitscm(top, parent):
                         git['clean'].update(clean_dict)
                     else:  # Need to create dict for git['clean']
                         git['clean'] = clean_dict
+                elif extension.tag == 'hudson.plugins.git.extensions.impl.PathRestriction':
+                    paths = {'includedRegions': 'included-regions',
+                             'excludedRegions': 'excluded-regions'}
+                    for jxml, jjb in list(paths.items()):
+                        if extension.find(jxml) is not None:
+                            regions = extension.find(jxml).text
+                            if regions is not None:
+                                git[jjb] = regions.splitlines()
                 else:
                     raise NotImplementedError("%s not supported" % extension.tag)
 
