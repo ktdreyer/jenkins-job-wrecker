@@ -35,7 +35,8 @@ class Registry(object):
                            'matrix-project': 'matrix',
                            'com.cloudbees.plugins.flow.BuildFlow': 'flow',
                            'flow-definition': 'pipeline',
-                           'com.cloudbees.hudson.plugins.folder.Folder': 'folder'}
+                           'com.cloudbees.hudson.plugins.folder.Folder': 'folder',
+                           'hudson.model.ListView': 'listview'}
             for name, item in self._get_entry_points('jenkins_job_wrecker.projects').iteritems():
                 valid_types.update(item)
             self.project_types.update(valid_types)

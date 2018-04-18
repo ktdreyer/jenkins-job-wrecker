@@ -65,6 +65,10 @@ before hand or right before running the CLI tool::
      JJW_USERNAME=alfredo JJW_PASSWORD=go-tamaulipas jjwrecker -s
      http://jenkins.ceph.com
 
+If you receive the error ``Don't know how to handle a non-empty <actions> element.``,
+you have actions in your xml for that job (probably from plugins). If you know that
+you don't need this information in your JJB yml job config, try the ``-a`` flag.
+
 If your Jenkins instance is using HTTPS and protected by a custom CA, add the
 CA's public cert to your system certificate store:
 

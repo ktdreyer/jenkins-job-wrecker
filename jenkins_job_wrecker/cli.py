@@ -8,6 +8,7 @@ import os
 import sys
 import textwrap
 from jenkins_job_wrecker.modules.handlers import Handlers
+from jenkins_job_wrecker.modules.listview import Listview
 from jenkins_job_wrecker.registry import Registry
 import xml.etree.ElementTree as ET
 import yaml
@@ -57,9 +58,8 @@ def get_xml_root(filename=False, string=False):
 def root_to_yaml(root, name, ignore_actions=False):
     # Top-level "job" data
     job = {}
-    build = [{'job': job}]
-
     job['name'] = unicode(name)
+    build = []
 
     # Create register
     reg = Registry()
@@ -73,7 +73,13 @@ def root_to_yaml(root, name, ignore_actions=False):
         # Handle each top-level XML element with custom modules/functions in
         # modules/handlers.py
         # registry determines difference at runtime
-        if job['project-type'] != 'folder':
+        if job['project-type'] == 'listview':
+            build.append({'view': job})
+            reg = Registry(ignore_actions=ignore_actions)
+            viewhandler = Listview(reg)
+            viewhandler.gen_yml(job, root)
+        elif job['project-type'] != 'folder':
+            build.append({'job': job})
             reg = Registry(ignore_actions=ignore_actions)
             handlers = Handlers(reg)
             handlers.gen_yml(job, root)
@@ -111,6 +117,10 @@ def parse_args(args):
         help='Name of a job'
     )
     parser.add_argument(
+        '-u', '--view',
+        help='Name of a view'
+    )
+    parser.add_argument(
         '-i', '--ignore',
         nargs='*',
         help='Ignore some jobs in conversion.'
@@ -142,8 +152,8 @@ def main():
 
     # Options:
     # -f and -n
-    # -s and -n
-    # TODO: -s (without -n means "all jobs on the server")
+    # -s and -n/-u
+    # -s (without -n means "all jobs on the server")
     # Choose either -f or -s ...
     if not args.jenkins_server and not args.filename:
         log.critical('Choose an XML file (-f) or Jenkins URL (-s).')
@@ -155,8 +165,9 @@ def main():
         exit(1)
 
     # -f requires -n
-    if args.filename and not args.name:
-        log.critical('Choose a job name (-n) for the job in this file.')
+    if args.filename and not args.name and not args.view:
+        log.critical('Choose a job name (-n) or a view name (-u) for the job'
+                     ' in this file.')
         exit(1)
 
     # Args are ok. Proceed with writing output
@@ -170,7 +181,7 @@ def main():
     if args.filename:
         # Convert to YAML
         root = get_xml_root(filename=args.filename)
-        yaml = root_to_yaml(root, args.name)
+        yaml = root_to_yaml(root, args.name, args.ignore_actions_tag)
         # Create output directory structure where needed
         yaml_filename = os.path.join(args.output_dir, args.name + '.yml')
         path = os.path.dirname(yaml_filename)
@@ -215,27 +226,58 @@ def main():
 
                 job_names.append(job['fullname'])
 
-        # write YAML
-        for fullname in job_names:
-            log.info('looking up job "%s"' % fullname)
-            # Get a job's XML
-            xml = server.get_job_config(fullname)
-            log.debug(xml)
-            # Convert XML to YAML
-            root = get_xml_root(string=xml)
-            log.info('converting job "%s" to YAML' % fullname)
-            yaml = root_to_yaml(root, fullname, args.ignore_actions_tag)
-            # Create output directory structure where needed
-            yaml_filename = os.path.join('output', fullname + '.yml')
-            path = os.path.dirname(yaml_filename)
-            try:
-                os.makedirs(path)
-            except OSError as exc:  # Python >2.5
-                if exc.errno == errno.EEXIST and os.path.isdir(path):
-                    pass
+        if args.view:
+            view_names = [args.view]
+        else:
+            view_names = []
+            for view in server.get_views():
+                if args.ignore and view['name'] in args.ignore:
+                    log.info('Ignoring \"%s\" as requested...' % view['name'])
+                    continue
+
+                if view['name'] != 'all':
+                    view_names.append(view['name'])
+
+        def convert_to_yml(job_names, element_type, output_dir='output'):
+            """
+            Takes a list of job or view names and converts them all to YAML and
+            writes them to a file.
+
+            :param list[str] job_names: Either job names or view names to get
+                configs for from the server.
+            :param str element_type: The type of job_names. Either 'job' or
+                'view' currently.
+            :param str output_dir: The directory to write the files to.
+            """
+            for fullname in job_names:
+                log.info('looking up %s "%s"' % (element_type, fullname))
+                # Get a job's XML
+                if element_type == 'job':
+                    xml = server.get_job_config(fullname)
+                elif element_type == 'view':
+                    xml = server.get_view_config(fullname)
                 else:
-                    raise
-            # Write to output file
-            output_file = open(yaml_filename, 'w')
-            output_file.write(yaml)
-            output_file.close()
+                    log.critical('Invalid element_type.')
+                    exit(1)
+                log.debug(xml)
+                # Convert XML to YAML
+                root = get_xml_root(string=xml)
+                log.info('converting %s "%s"' % (element_type, fullname))
+                yaml = root_to_yaml(root, fullname, args.ignore_actions_tag)
+                # Create output directory structure where needed
+                yaml_filename = os.path.join(output_dir, fullname + '.yml')
+                path = os.path.dirname(yaml_filename)
+                try:
+                    os.makedirs(path)
+                except OSError as exc:  # Python >2.5
+                    if exc.errno == errno.EEXIST and os.path.isdir(path):
+                        pass
+                    else:
+                        raise
+                # Write to output file
+                output_file = open(yaml_filename, 'w')
+                output_file.write(yaml)
+                output_file.close()
+
+        convert_to_yml(job_names, 'job')
+        convert_to_yml(view_names, 'view', output_dir='output/views')
