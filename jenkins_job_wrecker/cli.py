@@ -10,6 +10,7 @@ import textwrap
 from jenkins_job_wrecker.modules.handlers import Handlers
 from jenkins_job_wrecker.modules.listview import Listview
 from jenkins_job_wrecker.registry import Registry
+from jenkins_job_wrecker.helpers import gen_raw
 import xml.etree.ElementTree as ET
 import yaml
 
@@ -216,7 +217,7 @@ def main():
 
         if args.name:
             job_names = [args.name]
-        else:
+        elif not args.view:
             job_names = []
             # Folder depth of None means go down indefinitely
             for job in server.get_jobs(folder_depth=None):
@@ -225,10 +226,12 @@ def main():
                     continue
 
                 job_names.append(job['fullname'])
+        else:
+            job_names = []
 
         if args.view:
             view_names = [args.view]
-        else:
+        elif not args.name:
             view_names = []
             for view in server.get_views():
                 if args.ignore and view['name'] in args.ignore:
@@ -237,6 +240,8 @@ def main():
 
                 if view['name'] != 'all':
                     view_names.append(view['name'])
+        else:
+            view_names = []
 
         def convert_to_yml(job_names, element_type, output_dir='output'):
             """
