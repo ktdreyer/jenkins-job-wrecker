@@ -193,7 +193,7 @@ def gitscm(top, parent):
                         git['clean'].update(clean_dict)
                     else:  # Need to create dict for git['clean']
                         git['clean'] = clean_dict
-                elif extension.tag == 'hudson.plugins.git.extensions.impl.CleanAfterCheckout':
+                elif extension.tag == 'hudson.plugins.git.extensions.impl.CleanCheckout':
                     clean_dict = {'after': True}
                     if 'clean' in git:  # before has already been added
                         git['clean'].update(clean_dict)
