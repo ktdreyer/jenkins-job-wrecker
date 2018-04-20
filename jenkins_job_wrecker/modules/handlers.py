@@ -43,7 +43,8 @@ def authtoken(top, parent):
 
 # Handle "<description>my cool job</description>"
 def description(top, parent):
-    parent.append(['description', top.text])
+    if top.text:
+        parent.append(['description', top.text])
 
 
 # Handle "<keepDependencies>false</keepDependencies>"
@@ -63,21 +64,21 @@ def canroam(top, parent):
 
 # Handle "<disabled>false</disabled>"
 def disabled(top, parent):
-    parent.append(['disabled', top.text == 'true'])
+    parent.append(['disabled', get_bool(top.text)])
 
 
 # Handle "<blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>" NOQA
 def blockbuildwhendownstreambuilding(top, parent):
-    parent.append(['block-downstream', top.text == 'true'])
+    parent.append(['block-downstream', get_bool(top.text)])
 
 
 # Handle "<blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>" NOQA
 def blockbuildwhenupstreambuilding(top, parent):
-    parent.append(['block-upstream', top.text == 'true'])
+    parent.append(['block-upstream', get_bool(top.text)])
 
 
 def concurrentbuild(top, parent):
-    parent.append(['concurrent', top.text == 'true'])
+    parent.append(['concurrent', get_bool(top.text)])
 
 
 def axes(top, parent):
@@ -111,7 +112,7 @@ def executionstrategy(top, parent):
     for child in top:
 
         if child.tag == 'runSequentially':
-            strategy['sequential'] = (child.text == 'true')
+            strategy['sequential'] = get_bool(top.text)
         elif child.tag == 'sorter':
             # Is there anything but NOOP?
             pass
