@@ -237,12 +237,14 @@ def groovypostbuildrecorder(top, parent):
 def slacknotifier(top, parent):
     slacknotifier = {}
     notifications = {
+        "startNotification": "notify-start",
         "notifySuccess": "notify-success",
         "notifyAborted": "notify-aborted",
         "notifyNotBuilt": "notify-not-built",
         "notifyUnstable": "notify-unstable",
         "notifyFailure": "notify-failure",
         "notifyBackToNormal": "notify-back-to-normal",
+        'notify-regression': 'notifyRegression',
         "notifyRepeatedFailure": "notify-repeated-failure"
     }
     for child in top:
@@ -264,9 +266,7 @@ def slacknotifier(top, parent):
         elif child.tag == 'includeTestSummary':
             slacknotifier['include-test-summary'] = get_bool(child.text)
         elif child.tag == 'includeFailedTests':
-            if get_bool(child.text):
-                raise NotImplementedError("%s not implemented in JJB yet."
-                                          % child.tag)
+            slacknotifier['include-failed-tests'] = get_bool(child.text)
         elif child.tag == 'commitInfoChoice':
             slacknotifier['commit-info-choice'] = child.text
         elif child.tag == 'includeCustomMessage':
@@ -279,6 +279,10 @@ def slacknotifier(top, parent):
         elif child.tag == 'baseUrl':
             if child.text:
                 slacknotifier['base-url'] = child.text
+        else:
+            print(child.tag)
+            raise NotImplementedError("cannot handle "
+                                      "XML %s" % child.tag)
     parent.append({'slack': slacknotifier})
 
 
