@@ -71,6 +71,15 @@ def root_to_yaml(root, name, ignore_actions=False):
     if root.tag in project_types:
         job['project-type'] = project_types[root.tag]
 
+        if job['project-type'] == 'pipeline':
+            # For pipeline jobs, they have the
+            # DisableConcurrentBuildsJobProperty tag for not allowing
+            # concurrent builds, but no tag for true. JJB defaults to false,
+            # this is to make it true in the event that the tag doesn't exist
+            if not root.find('properties.DisableConcurrentBuildsJobProperty'):
+                conElement = ET.SubElement(root, 'concurrentBuild')
+                conElement.text = 'true'
+
         # Handle each top-level XML element with custom modules/functions in
         # modules/handlers.py
         # registry determines difference at runtime
