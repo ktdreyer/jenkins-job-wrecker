@@ -244,7 +244,7 @@ def slacknotifier(top, parent):
         "notifyUnstable": "notify-unstable",
         "notifyFailure": "notify-failure",
         "notifyBackToNormal": "notify-back-to-normal",
-        'notify-regression': 'notifyRegression',
+        "notifyRegression": "notify-regression",
         "notifyRepeatedFailure": "notify-repeated-failure"
     }
     for child in top:
@@ -280,7 +280,6 @@ def slacknotifier(top, parent):
             if child.text:
                 slacknotifier['base-url'] = child.text
         else:
-            print(child.tag)
             raise NotImplementedError("cannot handle "
                                       "XML %s" % child.tag)
     parent.append({'slack': slacknotifier})
