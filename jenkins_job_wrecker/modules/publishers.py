@@ -22,21 +22,17 @@ def artifactarchiver(top, parent):
         if element.tag == 'artifacts':
             archive['artifacts'] = element.text
         elif element.tag == 'allowEmptyArchive':
-            archive['allow-empty'] = get_bool(element.text)
+            archive['allow-empty'] = (element.text == 'true')
         elif element.tag == 'fingerprint':
-            archive['fingerprint'] = get_bool(element.text)
+            archive['fingerprint'] = (element.text == 'true')
         elif element.tag == 'onlyIfSuccessful':
             # only-if-success first available in JJB 1.3.0
-            archive['only-if-success'] = get_bool(element.text)
+            archive['only-if-success'] = (element.text == 'true')
         elif element.tag == 'defaultExcludes':
             # default-excludes is not yet available in JJB master
-            archive['default-excludes'] = get_bool(element.text)
+            archive['default-excludes'] = (element.text == 'true')
         elif element.tag == 'latestOnly':
-            archive['latest-only'] = get_bool(element.text)
-        elif element.tag == 'caseSensitive':
-            archive['case-sensitive'] = get_bool(element.text)
-        elif element.tag == 'excludes':
-            archive['excludes'] = element.text
+            archive['latest-only'] = (element.text == 'true')
         else:
             raise NotImplementedError("cannot handle "
                                       "XML %s" % element.tag)
@@ -236,53 +232,12 @@ def groovypostbuildrecorder(top, parent):
 
 def slacknotifier(top, parent):
     slacknotifier = {}
-    notifications = {
-        "startNotification": "notify-start",
-        "notifySuccess": "notify-success",
-        "notifyAborted": "notify-aborted",
-        "notifyNotBuilt": "notify-not-built",
-        "notifyUnstable": "notify-unstable",
-        "notifyFailure": "notify-failure",
-        "notifyBackToNormal": "notify-back-to-normal",
-        'notify-regression': 'notifyRegression',
-        "notifyRepeatedFailure": "notify-repeated-failure"
-    }
-    for child in top:
-        if child.tag == 'teamDomain':
-            if child.text:
-                slacknotifier['team-domain'] = child.text
-        elif child.tag == 'authToken':
-            if child.text:
-                slacknotifier['auth-token'] = child.text
-        elif child.tag == 'authTokenCredentialId':
-            if child.text:
-                slacknotifier['auth-token-credential-id'] = child.text
-        elif child.tag == 'buildServerUrl':
-            slacknotifier['build-server-url'] = child.text
-        elif child.tag == 'room':
-            slacknotifier['room'] = child.text
-        elif child.tag in notifications:
-            slacknotifier[notifications[child.tag]] = get_bool(child.text)
-        elif child.tag == 'includeTestSummary':
-            slacknotifier['include-test-summary'] = get_bool(child.text)
-        elif child.tag == 'includeFailedTests':
-            slacknotifier['include-failed-tests'] = get_bool(child.text)
-        elif child.tag == 'commitInfoChoice':
-            slacknotifier['commit-info-choice'] = child.text
-        elif child.tag == 'includeCustomMessage':
-            slacknotifier['include-custom-message'] = get_bool(child.text)
-        elif child.tag == 'customMessage':
-            if child.text:
-                slacknotifier['custom-message'] = child.text
-        elif child.tag == 'botUser':
-            slacknotifier['bot-user'] = get_bool(child.text)
-        elif child.tag == 'baseUrl':
-            if child.text:
-                slacknotifier['base-url'] = child.text
-        else:
-            print(child.tag)
-            raise NotImplementedError("cannot handle "
-                                      "XML %s" % child.tag)
+    slack_tags = ['teamDomain', 'authToken', 'buildServerUrl', 'room']
+    for slack_el in top:
+        if slack_el.tag not in slack_tags:
+            raise NotImplementedError("cannot handle SlackNotifier.%s" % slack_el.tag)
+        slack_yaml_key = re.sub('([A-Z])', r'-\1', slack_el.tag).lower()
+        slacknotifier[slack_yaml_key] = slack_el.text
     parent.append({'slack': slacknotifier})
 
 

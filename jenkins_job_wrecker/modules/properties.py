@@ -200,10 +200,3 @@ def builddiscarderproperty(top, parent):
         discarder[mapping[child.tag]] = int(child.text)
 
     parent.append({'build-discarder': discarder})
-
-
-def disableconcurrentbuildsjobproperty(top, parent):
-    # Pipeline job specific tag.
-    # concurrent is false by default anyway, so just going to ignore it
-    # Check cli.py root_to_yaml func for more info
-    pass
