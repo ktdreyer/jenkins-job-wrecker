@@ -14,17 +14,17 @@ from jenkins_job_wrecker.helpers import gen_raw
 import xml.etree.ElementTree as ET
 import yaml
 
-is_py_v2 = True if sys.version[0] == '2' else False
-if is_py_v2:
+PY2 = sys.version_info[0] == 2
+if PY2:
     reload(sys)
     sys.setdefaultencoding('utf8')
 
+    text_type = unicode
+else:
+    text_type = str
+
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger('jjwrecker')
-
-
-class literal_unicode(unicode):
-    pass
 
 
 def str_presenter(dumper, data):
@@ -40,7 +40,9 @@ def str_presenter(dumper, data):
 
 
 yaml.add_representer(str, str_presenter)
-yaml.add_representer(literal_unicode, str_presenter)
+if PY2:
+    yaml.add_representer(unicode, str_presenter)
+
 
 
 # Given a file with XML, or a string of XML, parse it with
@@ -59,7 +61,7 @@ def get_xml_root(filename=False, string=False):
 def root_to_yaml(root, name, ignore_actions=False):
     # Top-level "job" data
     job = {}
-    job['name'] = unicode(name)
+    job['name'] = text_type(name)
     build = []
 
     # Create register

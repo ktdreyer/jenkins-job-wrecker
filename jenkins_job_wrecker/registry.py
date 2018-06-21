@@ -1,4 +1,6 @@
 # encoding=utf8
+from __future__ import print_function
+
 from importlib import import_module
 from inspect import getmembers, isfunction, isclass
 from jenkins_job_wrecker.helpers import gen_raw
@@ -6,7 +8,6 @@ import jenkins_job_wrecker.modules
 from os.path import dirname
 from pkg_resources import iter_entry_points
 from pkgutil import iter_modules
-
 
 class DuplicateEntryPoint(Exception):
     pass
@@ -21,13 +22,13 @@ class Registry(object):
         self.ignore_actions = ignore_actions
 
     def _get_entry_points(self, name):
-        found = {}
+        found = set()
         for ep in iter_entry_points(group=name):
             if ep.name in found:
                 msg = 'Entry point {0} already defined for {1}'.format(ep.name, name)
                 raise DuplicateEntryPoint(msg)
-            found[ep.name] = ep.load()
-        return found
+            found.add(ep.name)
+            yield ep.load()
 
     def get_project_types(self):
         if len(self.project_types) == 0:
@@ -37,7 +38,7 @@ class Registry(object):
                            'flow-definition': 'pipeline',
                            'com.cloudbees.hudson.plugins.folder.Folder': 'folder',
                            'hudson.model.ListView': 'listview'}
-            for name, item in self._get_entry_points('jenkins_job_wrecker.projects').iteritems():
+            for item in self._get_entry_points('jenkins_job_wrecker.projects'):
                 valid_types.update(item)
             self.project_types.update(valid_types)
         return self.project_types

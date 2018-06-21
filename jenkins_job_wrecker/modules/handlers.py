@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import jenkins_job_wrecker.modules.base
 from jenkins_job_wrecker.registry import Registry
 from jenkins_job_wrecker.helpers import get_bool
@@ -23,7 +25,7 @@ class Handlers(jenkins_job_wrecker.modules.base.Base):
                     else:
                         yml_parent[key] = value
             except Exception:
-                print 'last called %s' % handler_name
+                print('last called %s' % handler_name)
                 raise
 
 

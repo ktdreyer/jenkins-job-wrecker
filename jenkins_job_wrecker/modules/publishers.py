@@ -1,4 +1,6 @@
 # encoding=utf8
+from __future__ import print_function
+
 import re
 
 import jenkins_job_wrecker.modules.base
@@ -101,7 +103,7 @@ def extendedemailpublisher(top, parent):
         elif element.tag == 'sendTo':
             ext_email['send-to'] = element.text
         elif element.tag == 'configuredTriggers':
-            print "IGNORED configuredTriggers in email-ext"
+            print("IGNORED configuredTriggers in email-ext")
         else:
             raise NotImplementedError("cannot handle XML %s" % element.tag)
 
