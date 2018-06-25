@@ -17,12 +17,11 @@ class TestJJB(object):
         yaml = root_to_yaml(root, jobname)
 
         # Run this wrecker YAML thru JJB.
-        temp = tempfile.NamedTemporaryFile()
-        temp.write(yaml)
-        temp.flush()
-        jjb = JenkinsJobs(['test', temp.name])
-        assert jjb.execute() is None
-        temp.close()
+        with tempfile.NamedTemporaryFile('w') as temp:
+            temp.write(yaml)
+            temp.flush()
+            jjb = JenkinsJobs(['test', temp.name])
+            assert jjb.execute() is None
 
     def test_ice_setup(self):
         self.run_jjb('ice-setup')
