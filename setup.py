@@ -1,10 +1,19 @@
 from __future__ import print_function
+import re
 import subprocess
 import sys
 from setuptools import setup, find_packages, Command
 from setuptools.command.test import test as TestCommand
 
-version = '1.6.0'
+
+def read_module_contents():
+    with open('jenkins_job_wrecker/__init__.py') as init:
+        return init.read()
+
+
+module_file = read_module_contents()
+metadata = dict(re.findall("__([a-z]+)__\s*=\s*'([^']+)'", module_file))
+version = metadata['version']
 
 
 class PyTest(TestCommand):
