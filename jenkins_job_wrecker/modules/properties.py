@@ -117,7 +117,7 @@ def parameters(top, parent):
                 key = {'defaultValue': 'default'}.get(setting.tag, setting.tag)
                 if setting.text is None:
                     parameter[key] = ''
-                elif setting.text == 'true' or setting.text == 'false':
+                elif param_type == 'bool' and (setting.text == 'true' or setting.text == 'false'):
                     parameter[key] = (setting.text == 'true')
                 elif param_type == 'choice' and setting.tag == 'choices':
                     choices = []
