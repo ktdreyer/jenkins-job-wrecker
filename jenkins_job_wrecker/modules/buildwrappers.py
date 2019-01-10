@@ -162,7 +162,7 @@ def prebuildcleanup(top, parent):
             pass
         else:
             raise NotImplementedError("cannot handle "
-                                      "XML %s" % subelement.tag)
+                                      "XML %s" % element.tag)
 
     for rule in preclean_patterns:
         if preclean_patterns[rule] is not None and len(preclean_patterns[rule]) > 0:
