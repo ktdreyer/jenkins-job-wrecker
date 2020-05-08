@@ -221,6 +221,7 @@ def htmlpublisher(top, parent):
 def groovypostbuildrecorder(top, parent):
     groovy = {}
     for groovy_element in top:
+        # Groovy Postbuild plugin v1.X tags below
         if groovy_element.tag == 'groovyScript':
             groovy['script'] = groovy_element.text
         elif groovy_element.tag == 'classpath':
@@ -230,8 +231,28 @@ def groovypostbuildrecorder(top, parent):
                     if child2.tag == 'path':
                         classpaths.append(child2.text)
             groovy['classpath'] = classpaths
+        # Groovy Postbuild plugin v2.X tags below
+        elif groovy_element.tag == 'script':
+            for child in groovy_element:
+                if child.tag == 'script':
+                    groovy['script'] = child.text
+                elif child.tag == 'sandbox':
+                    groovy['sandbox'] = (child.text == 'true')
+                else:
+                    raise NotImplementedError("cannot handle groovy-postbuild script elements")
+        elif groovy_element.tag == 'behavior':
+            # https://github.com/jenkinsci/groovy-postbuild-plugin/blob/groovy-postbuild-2.5/src/main/java/org/jvnet/hudson/plugins/groovypostbuild/GroovyPostbuildRecorder.java#L395
+            behavior = {
+                '0': 'nothing',
+                '1': 'unstable',
+                '2': 'failed'
+            }
+            groovy['on-failure'] = behavior.get(groovy_element.text)
+            if groovy['on-failure'] is None:
+                raise NotImplementedError("cannot handle groovy-postbuild behavior value")
+        elif groovy_element.tag == 'runForMatrixParent':
+            groovy['matrix-parent'] = (groovy_element.text == 'true')
         else:
-            continue  # WTF is this?
             raise NotImplementedError("cannot handle groovy-postbuild elements")
     parent.append({'groovy-postbuild': groovy})
 
