@@ -207,3 +207,46 @@ def disableconcurrentbuildsjobproperty(top, parent):
     # concurrent is false by default anyway, so just going to ignore it
     # Check cli.py root_to_yaml func for more info
     pass
+
+def authorizationmatrixproperty(top, parent):
+    # mirror image of: https://opendev.org/jjb/jenkins-job-builder/src/commit/074985c7ff9360bb58be80ffab686746267f814f/jenkins_jobs/modules/properties.py#L530
+    credentials = 'com.cloudbees.plugins.credentials.CredentialsProvider.'
+    ownership = 'com.synopsys.arc.jenkins.plugins.ownership.OwnershipPlugin.'
+
+    permissions = {
+        ''.join((credentials, 'Create')): 'credentials-create',
+        ''.join((credentials, 'Delete')): 'credentials-delete',
+        ''.join((credentials, 'ManageDomains')): 'credentials-manage-domains',
+        ''.join((credentials, 'Update')): 'credentials-update',
+        ''.join((credentials, 'View')): 'credentials-view',
+        'hudson.model.Item.Build': 'job-build',
+        'hudson.model.Item.Cancel': 'job-cancel',
+        'hudson.model.Item.Configure': 'job-configure',
+        'hudson.model.Item.Create': 'job-create',
+        'hudson.model.Item.Delete': 'job-delete',
+        'hudson.model.Item.Discover': 'job-discover',
+        'hudson.model.Item.ExtendedRead': 'job-extended-read',
+        'hudson.model.Item.Move': 'job-move',
+        'hudson.model.Item.Read': 'job-read',
+        'hudson.model.Item.ViewStatus': 'job-status',
+        'hudson.model.Item.Workspace': 'job-workspace',
+        ''.join((ownership, 'Jobs')): 'ownership-jobs',
+        'hudson.model.Run.Delete': 'run-delete',
+        'hudson.model.Run.Replay': 'run-replay',
+        'hudson.model.Run.Update': 'run-update',
+        'hudson.scm.SCM.Tag': 'scm-tag'
+    }
+    authorization = {}
+    for child in top:
+        if child.tag == 'inheritanceStrategy':
+            class_ = child.get('class')
+            if class_ != 'org.jenkinsci.plugins.matrixauth.inheritance.InheritParentStrategy':
+                raise NotImplementedError('cannot handle inheritance strategy - not implemented in JJB')
+        elif child.tag == 'permission':
+            permission, name = child.text.split(':', 1)
+            if name not in authorization:
+                authorization[name] = []
+            authorization[name].append(permissions[permission])
+        else:
+            raise NotImplementedError('cannot handle XML {}'.format(child.tag))
+    parent.append({'authorization': authorization})
