@@ -155,11 +155,11 @@ def prebuildcleanup(top, parent):
                     rule_patt = subelement.find('pattern').text
                     preclean_patterns[rule_type] = rule_patt
         elif element.tag == 'cleanupParameter':
-            # JJB does not seem to support this. Ignored.
-            pass
+            preclean['check-parameter'] = element.text
         elif element.tag == 'externalDelete':
-            # JJB does not seem to support this. Ignored.
-            pass
+            preclean['external-deletion-command'] = element.text
+        elif element.tag == 'disableDeferredWipeout':
+            preclean['disable-deferred-wipeout'] = (element.text == 'true')
         else:
             raise NotImplementedError("cannot handle "
                                       "XML %s" % element.tag)
