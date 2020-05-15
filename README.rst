@@ -75,7 +75,7 @@ CA's public cert to your system certificate store:
 * Fedora: ``/etc/pki/tls/certs`` directory,
 * Ubuntu: ``/usr/local/share/ca-certificates/``
 
-After you've placed the PEM-formmated file there, run ``c_reshash`` in that
+After you've placed the PEM-formatted file there, run ``c_reshash`` in that
 directory to create the CA certificate hash symlink.  jjwrecker uses
 python-jenkins, which in turn uses six's urllib, and that library will validate
 HTTPS connections based on this openssl-hashed directory of certificates.
