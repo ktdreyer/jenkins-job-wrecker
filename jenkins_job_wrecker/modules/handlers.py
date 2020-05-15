@@ -174,6 +174,10 @@ def customworkspace(top, parent):
     parent.append(['workspace', top.text])
 
 
+def childcustomworkspace(top, parent):
+    parent.append(['child-workspace', top.text])
+
+
 def jdk(top, parent):
     parent.append(['jdk', top.text])
 
