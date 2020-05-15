@@ -3,7 +3,6 @@ import re
 import subprocess
 import sys
 from setuptools import setup, find_packages, Command
-from setuptools.command.test import test as TestCommand
 try:
     # Python 2 backwards compat
     from __builtin__ import raw_input as input
@@ -109,24 +108,6 @@ class ReleaseCommand(Command):
         subprocess.check_call(cmd)
 
 
-class PyTest(TestCommand):
-    user_options = [('pytest-args=', 'a', "Arguments to pass to py.test")]
-
-    def initialize_options(self):
-        TestCommand.initialize_options(self)
-        self.pytest_args = []
-
-    def finalize_options(self):
-        TestCommand.finalize_options(self)
-        self.test_args = []
-        self.test_suite = True
-
-    def run_tests(self):
-        import pytest
-        errno = pytest.main(self.pytest_args)
-        sys.exit(errno)
-
-
 setup(name="jenkins-job-wrecker",
       version=version,
       description=('convert Jenkins XML to YAML'),
@@ -151,13 +132,8 @@ setup(name="jenkins-job-wrecker",
               'jjwrecker = jenkins_job_wrecker.cli:main',
           ],
       },
-      tests_require=[
-          'pytest',
-          'jenkins-job-builder',
-      ],
       cmdclass={
           'bump': BumpCommand,
           'release': ReleaseCommand,
-          'test': PyTest,
       },
      )
