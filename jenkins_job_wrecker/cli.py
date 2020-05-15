@@ -296,4 +296,5 @@ def main():
                 output_file.close()
 
         convert_to_yml(job_names, 'job', output_dir=args.output_dir)
-        convert_to_yml(view_names, 'view', output_dir=args.output_dir+"/views")
+        convert_to_yml(view_names, 'view',
+                       output_dir=os.path.join(args.output_dir, 'views'))
