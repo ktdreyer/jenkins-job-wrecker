@@ -3,7 +3,8 @@ from jenkins_job_wrecker.cli import get_xml_root
 from jenkins_job_wrecker.modules.buildwrappers import prebuildcleanup
 import os
 
-fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures', 'buildwrappers')
+fixtures_path = os.path.join(os.path.dirname(
+    __file__), 'fixtures', 'buildwrappers')
 
 
 class TestPreBuildCleanup(object):
