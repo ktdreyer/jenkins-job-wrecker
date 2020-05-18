@@ -1,6 +1,7 @@
 *.py[cod]
 *.swp
 *.egg-info
+/.eggs
 /.tox
 /build
 /dist

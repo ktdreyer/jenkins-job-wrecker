@@ -1,5 +1,6 @@
 linters:
   flake8:
     fixer: true
+    select: F,E9
 fixers:
   enable: true

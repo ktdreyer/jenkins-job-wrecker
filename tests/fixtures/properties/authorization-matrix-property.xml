@@ -1,0 +1,7 @@
+<hudson.security.AuthorizationMatrixProperty>
+	<inheritanceStrategy class="org.jenkinsci.plugins.matrixauth.inheritance.InheritParentStrategy" />
+	<permission>hudson.model.Item.Build:usera</permission>
+	<permission>hudson.model.Item.Configure:userb</permission>
+	<permission>hudson.model.Item.Read:usera</permission>
+	<permission>hudson.model.Item.Workspace:userb</permission>
+</hudson.security.AuthorizationMatrixProperty>
