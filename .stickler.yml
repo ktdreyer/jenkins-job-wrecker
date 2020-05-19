@@ -1,5 +1,6 @@
 linters:
   flake8:
+    builtins: reload,unicode
     fixer: true
     select: F,E9
 fixers:

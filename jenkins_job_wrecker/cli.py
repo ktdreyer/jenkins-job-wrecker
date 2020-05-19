@@ -10,7 +10,6 @@ import textwrap
 from jenkins_job_wrecker.modules.handlers import Handlers
 from jenkins_job_wrecker.modules.listview import Listview
 from jenkins_job_wrecker.registry import Registry
-from jenkins_job_wrecker.helpers import gen_raw
 import xml.etree.ElementTree as ET
 import yaml
 
