@@ -1,0 +1,7 @@
+<org.jenkinsci.plugins.buildnameupdater.BuildNameUpdater plugin="build-name-setter@2.0.3">
+      <buildName>version.txt</buildName>
+      <macroTemplate>#${BUILD_NUMBER}-${FILE,path=&quot;BUILD_NAMER&quot;}</macroTemplate>
+      <fromFile>false</fromFile>
+      <fromMacro>true</fromMacro>
+      <macroFirst>false</macroFirst>
+</org.jenkinsci.plugins.buildnameupdater.BuildNameUpdater>
