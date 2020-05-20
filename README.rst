@@ -85,5 +85,5 @@ License
 -------
 MIT (see ``LICENSE``)
 
-Copyright (c) 2015-2020 Red Hat, Inc.\
-Copyright (c) 2020 Liberty Global B.V.
+* Copyright (c) 2015-2020 Red Hat, Inc.
+* Copyright (c) 2020 Liberty Global B.V.
