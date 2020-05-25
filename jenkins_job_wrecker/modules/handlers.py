@@ -21,7 +21,10 @@ class Handlers(jenkins_job_wrecker.modules.base.Base):
                     if key in yml_parent:
                         if not value:
                             continue
-                        yml_parent[key].append(value[0])
+                        if type(yml_parent[key]) is dict:
+                            yml_parent[key].update(value)
+                        elif type(yml_parent[key]) is list:
+                            yml_parent[key].append(value[0])
                     else:
                         yml_parent[key] = value
             except Exception:
@@ -147,7 +150,9 @@ def logrotator(top, parent):
 
 # Handle "<combinationFilter>a != &quot;b&quot;</combinationFilter>"
 def combinationfilter(top, parent):
-    parent.append(['combination-filter', top.text])
+    strategy = {}
+    strategy['combination-filter'] = top.text
+    parent.append(['execution-strategy', strategy])
 
 
 # Handle "<assignedNode>server.example.com</assignedNode>"
