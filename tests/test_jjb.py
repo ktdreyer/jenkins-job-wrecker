@@ -23,6 +23,18 @@ class TestJJB(object):
             jjb = JenkinsJobs(['test', temp.name])
             assert jjb.execute() is None
 
+    def compare_jjb_output(self, name, job_name):
+        test_filename = os.path.join(fixtures_path, name + '.xml')
+        expected_yml_filename = os.path.join(fixtures_path, name+'.yml')
+        root = get_xml_root(filename=test_filename)
+        actual_yml = root_to_yaml(root, job_name)
+
+        with open(expected_yml_filename) as f:
+            expected_yml = f.read()
+
+        assert actual_yml is not None
+        assert actual_yml == expected_yml
+
     def test_ice_setup(self):
         self.run_jjb('ice-setup')
 
@@ -31,3 +43,7 @@ class TestJJB(object):
 
     def test_non_ascii(self):
         self.run_jjb('non-ascii', 'テスト')
+
+    def test_indentation(self):
+        self.compare_jjb_output('indentation', 'indentation')
+
