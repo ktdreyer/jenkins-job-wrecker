@@ -31,7 +31,7 @@ def str_presenter(dumper, data):
         # The dumper will not respect "style='|'" if it detects trailing
         # whitespace on any line within the data. For scripts the trailing
         # whitespace is not important.
-        lines = [l.strip() for l in data.splitlines()]
+        lines = [l.rstrip() for l in data.splitlines()]
         data = '\n'.join(lines)
         return dumper.represent_scalar('tag:yaml.org,2002:str', data,
                                        style='|')
