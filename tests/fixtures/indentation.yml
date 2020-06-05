@@ -1,0 +1,12 @@
+- job:
+    builders:
+    - shell: |-
+        #!/bin/bash
+
+        test() {
+          echo test
+        }
+
+        test
+    name: indentation
+    project-type: freestyle

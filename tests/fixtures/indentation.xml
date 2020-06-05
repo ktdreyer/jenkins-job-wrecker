@@ -1,0 +1,13 @@
+<project>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>#!/bin/bash
+
+test() {
+  echo test
+}
+
+test</command>
+    </hudson.tasks.Shell>
+  </builders>
+</project>
