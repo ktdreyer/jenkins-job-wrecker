@@ -35,3 +35,22 @@ class Mapper(object):
             return get_bool(value)
         else:
             raise ValueError('Unsupported type: {}'.format(type_))
+
+
+def replace_tab(s, tab_stop=4):
+    result = str()
+    pos = 0
+    for c in s:
+        if c == '\t':
+            aligned = ((pos + tab_stop - 1) // tab_stop) * tab_stop
+            if pos % tab_stop != 0:
+                num_spaces = aligned - pos
+            else:
+                num_spaces = tab_stop
+            co = ' ' * num_spaces
+            pos += num_spaces
+        else:
+            co = c
+            pos += 1
+        result = result + co
+    return result

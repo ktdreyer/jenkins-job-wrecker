@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from jenkins_job_wrecker.cli import get_xml_root, root_to_yaml
+from jenkins_job_wrecker.cli import get_xml_root, root_to_yaml, setup_str_presenter
 import os
 import tempfile
 from jenkins_jobs.cli.entry import JenkinsJobs
@@ -14,6 +14,7 @@ class TestJJB(object):
         root = get_xml_root(filename=filename)
         if jobname is None:
             jobname = name
+        setup_str_presenter()
         yaml = root_to_yaml(root, jobname)
 
         # Run this wrecker YAML thru JJB.
@@ -44,6 +45,11 @@ class TestJJB(object):
     def test_non_ascii(self):
         self.run_jjb('non-ascii', 'テスト')
 
-    def test_indentation(self):
-        self.compare_jjb_output('indentation', 'indentation')
+    def test_indentation_with_tabs(self):
+        setup_str_presenter(True)
+        self.compare_jjb_output('indentation_with_tab', 'indentation_with_tab')
 
+
+    def test_indentation_without_tabs(self):
+        setup_str_presenter(False)
+        self.compare_jjb_output('indentation_without_tab', 'indentation_without_tab')
