@@ -208,6 +208,7 @@ def disableconcurrentbuildsjobproperty(top, parent):
     # Check cli.py root_to_yaml func for more info
     pass
 
+
 def authorizationmatrixproperty(top, parent):
     # mirror image of: https://opendev.org/jjb/jenkins-job-builder/src/commit/074985c7ff9360bb58be80ffab686746267f814f/jenkins_jobs/modules/properties.py#L530
     credentials = 'com.cloudbees.plugins.credentials.CredentialsProvider.'
@@ -250,3 +251,21 @@ def authorizationmatrixproperty(top, parent):
         else:
             raise NotImplementedError('cannot handle XML {}'.format(child.tag))
     parent.append({'authorization': authorization})
+
+
+def buildblockerproperty(top, parent):
+    build_blocker_property = {}
+    for child in top:
+        if child.tag == "useBuildBlocker":
+            build_blocker_property["use-build-blocker"] = get_bool(child.text)
+        elif child.tag == "blockLevel":
+            build_blocker_property["block-level"] = child.text
+        elif child.tag == "scanQueueFor":
+            build_blocker_property["queue-scanning"] = child.text
+        elif child.tag == "blockingJobs":
+            blocking_jobs = []
+            if child.text is not None:
+                blocking_jobs = [name.strip() for name in child.text.split('\n')]
+            build_blocker_property["blocking-jobs"] = blocking_jobs
+    parent.append({'build-blocker': build_blocker_property})
+
