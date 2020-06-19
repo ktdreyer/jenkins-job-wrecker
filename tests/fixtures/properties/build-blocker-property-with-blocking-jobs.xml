@@ -1,0 +1,8 @@
+<hudson.plugins.buildblocker.BuildBlockerProperty plugin="build-blocker-plugin@1.7.3">
+      <useBuildBlocker>true</useBuildBlocker>
+      <blockLevel>GLOBAL</blockLevel>
+      <scanQueueFor>DISABLED</scanQueueFor>
+      <blockingJobs>test
+test2
+test 3</blockingJobs>
+</hudson.plugins.buildblocker.BuildBlockerProperty>
