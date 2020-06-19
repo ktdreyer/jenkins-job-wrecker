@@ -250,3 +250,15 @@ def authorizationmatrixproperty(top, parent):
         else:
             raise NotImplementedError('cannot handle XML {}'.format(child.tag))
     parent.append({'authorization': authorization})
+
+
+def rebuildsettings(top, parent):
+    rebuild = {}
+    for child in top:
+        if child.tag == 'autoRebuild':
+            rebuild['auto-rebuild'] = (child.text == 'true')
+        elif child.tag == 'rebuildDisabled':
+            rebuild['rebuild-disabled'] = (child.text == 'true')
+        else:
+            raise NotImplementedError('Unsupported tag')
+    parent.append({'rebuild': rebuild})
