@@ -143,6 +143,8 @@ def prebuildcleanup(top, parent):
     preclean = {}
     preclean_patterns = {'include': '', 'exclude': ''}
     for element in top:
+        if element.text is None:
+            continue
         if element.tag == 'deleteDirs':
             preclean['dirmatch'] = (element.text == 'true')
         elif element.tag == 'patterns':

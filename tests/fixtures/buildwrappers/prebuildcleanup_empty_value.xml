@@ -1,0 +1,6 @@
+<hudson.plugins.ws__cleanup.PreBuildCleanup plugin="ws-cleanup@0.37">
+  <deleteDirs>true</deleteDirs>
+  <cleanupParameter></cleanupParameter>
+  <externalDelete></externalDelete>
+  <disableDeferredWipeout>true</disableDeferredWipeout>
+</hudson.plugins.ws__cleanup.PreBuildCleanup>

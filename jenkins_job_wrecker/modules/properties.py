@@ -269,3 +269,14 @@ def buildblockerproperty(top, parent):
             build_blocker_property["blocking-jobs"] = blocking_jobs
     parent.append({'build-blocker': build_blocker_property})
 
+
+def rebuildsettings(top, parent):
+    rebuild = {}
+    for child in top:
+        if child.tag == 'autoRebuild':
+            rebuild['auto-rebuild'] = (child.text == 'true')
+        elif child.tag == 'rebuildDisabled':
+            rebuild['rebuild-disabled'] = (child.text == 'true')
+        else:
+            raise NotImplementedError('Unsupported tag')
+    parent.append({'rebuild': rebuild})
