@@ -1,0 +1,79 @@
+- job:
+    name: gerrit-trigger
+    project-type: matrix
+    triggers:
+    - gerrit:
+        change-subject-parameter-mode: PLAIN
+        comment-text-parameter-mode: BASE64
+        commit-message-parameter-mode: PLAIN
+        custom-url: https://testurl.com
+        dependency-jobs: 'test21, test22, '
+        dynamic-trigger-enabled: true
+        dynamic-trigger-url: https://dynamictesturl.com
+        escape-quotes: true
+        failure-message: Build Failure
+        failure-message-file: Build unsuccessful
+        gerrit-build-failed-codereview-value: -1
+        gerrit-build-failed-verified-value: -1
+        gerrit-build-notbuilt-codereview-value: 0
+        gerrit-build-notbuilt-verified-value: -1
+        gerrit-build-started-codereview-value: 0
+        gerrit-build-started-verified-value: 0
+        gerrit-build-successful-codereview-value: 1
+        gerrit-build-successful-verified-value: 1
+        gerrit-build-unstable-codereview-value: 0
+        gerrit-build-unstable-verified-value: -1
+        name-and-email-parameter-mode: PLAIN
+        notbuilt-message: Build not built
+        notification-level: ALL
+        projects:
+        - branches:
+          - branch-compare-type: ANT
+            branch-pattern: ipsum
+          - branch-compare-type: ANT
+            branch-pattern: ipsum
+          disable-strict-forbidden-file-verification: false
+          project-compare-type: PLAIN
+          project-pattern: lorem
+        - branches:
+          - branch-compare-type: PLAIN
+            branch-pattern: ipsum2
+          - branch-compare-type: PLAIN
+            branch-pattern: ipsum2
+          disable-strict-forbidden-file-verification: false
+          project-compare-type: PLAIN
+          project-pattern: lorem2
+        server-name: https://testserver.com
+        silent: false
+        silent-start: false
+        skip-vote:
+          failed: true
+          notbuilt: false
+          successful: true
+          unstable: false
+        start-message: Build Started
+        successful-message: Build successful
+        trigger-on:
+        - change-abandoned-event
+        - change-merged-event
+        - change-restored-event
+        - comment-added-event:
+            approval-category: Code-Review
+            approval-value: zxcz
+        - comment-added-event:
+            approval-category: Verified
+            approval-value: aasdasd
+        - comment-added-contains-event:
+            comment-contains-value: reggex
+        - draft-published-event
+        - patchset-created-event:
+            exclude-drafts: true
+            exclude-no-code-change: true
+            exclude-private: false
+            exclude-trivial-rebase: false
+            exclude-wip: true
+        - private-state-changed-event
+        - ref-updated-event
+        - topic-changed-event
+        - wip-state-changed-event
+        unstable-message: Build Unstable

@@ -1,0 +1,103 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<matrix-project plugin="matrix-project@1.14">
+  <triggers>
+    <com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.GerritTrigger plugin="gerrit-trigger@2.30.5">
+      <spec></spec>
+      <gerritProjects>
+        <com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.data.GerritProject>
+          <compareType>PLAIN</compareType>
+          <pattern>lorem</pattern>
+          <branches>
+            <com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.data.Branch>
+              <compareType>ANT</compareType>
+              <pattern>ipsum</pattern>
+            </com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.data.Branch>
+            <com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.data.Branch>
+              <compareType>REG_EXP</compareType>
+              <pattern>dolor</pattern>
+            </com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.data.Branch>
+          </branches>
+          <disableStrictForbiddenFileVerification>false</disableStrictForbiddenFileVerification>
+        </com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.data.GerritProject>
+        <com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.data.GerritProject>
+          <compareType>PLAIN</compareType>
+          <pattern>lorem2</pattern>
+          <branches>
+            <com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.data.Branch>
+              <compareType>PLAIN</compareType>
+              <pattern>ipsum2</pattern>
+            </com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.data.Branch>
+            <com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.data.Branch>
+              <compareType>REG_EXP</compareType>
+              <pattern>dolor2</pattern>
+            </com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.data.Branch>
+          </branches>
+          <disableStrictForbiddenFileVerification>false</disableStrictForbiddenFileVerification>
+        </com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.data.GerritProject>
+      </gerritProjects>
+      <skipVote>
+        <onSuccessful>true</onSuccessful>
+        <onFailed>true</onFailed>
+        <onUnstable>false</onUnstable>
+        <onNotBuilt>false</onNotBuilt>
+      </skipVote>
+      <gerritBuildStartedVerifiedValue>0</gerritBuildStartedVerifiedValue>
+      <gerritBuildStartedCodeReviewValue>0</gerritBuildStartedCodeReviewValue>
+      <gerritBuildSuccessfulVerifiedValue>1</gerritBuildSuccessfulVerifiedValue>
+      <gerritBuildSuccessfulCodeReviewValue>1</gerritBuildSuccessfulCodeReviewValue>
+      <gerritBuildFailedVerifiedValue>-1</gerritBuildFailedVerifiedValue>
+      <gerritBuildFailedCodeReviewValue>-1</gerritBuildFailedCodeReviewValue>
+      <gerritBuildUnstableVerifiedValue>-1</gerritBuildUnstableVerifiedValue>
+      <gerritBuildUnstableCodeReviewValue>0</gerritBuildUnstableCodeReviewValue>
+      <gerritBuildNotBuiltVerifiedValue>-1</gerritBuildNotBuiltVerifiedValue>
+      <gerritBuildNotBuiltCodeReviewValue>0</gerritBuildNotBuiltCodeReviewValue>
+      <silentMode>false</silentMode>
+      <notificationLevel>ALL</notificationLevel>
+      <silentStartMode>false</silentStartMode>
+      <escapeQuotes>true</escapeQuotes>
+      <nameAndEmailParameterMode>PLAIN</nameAndEmailParameterMode>
+      <dependencyJobsNames>test21, test22, </dependencyJobsNames>
+      <commitMessageParameterMode>PLAIN</commitMessageParameterMode>
+      <changeSubjectParameterMode>PLAIN</changeSubjectParameterMode>
+      <commentTextParameterMode>BASE64</commentTextParameterMode>
+      <buildStartMessage>Build Started</buildStartMessage>
+      <buildFailureMessage>Build Failure</buildFailureMessage>
+      <buildSuccessfulMessage>Build successful</buildSuccessfulMessage>
+      <buildUnstableMessage>Build Unstable</buildUnstableMessage>
+      <buildNotBuiltMessage>Build not built</buildNotBuiltMessage>
+      <buildUnsuccessfulFilepath>Build unsuccessful</buildUnsuccessfulFilepath>
+      <customUrl>https://testurl.com</customUrl>
+      <serverName>https://testserver.com</serverName>
+      <triggerOnEvents>
+        <com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.events.PluginChangeAbandonedEvent/>
+        <com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.events.PluginChangeMergedEvent/>
+        <com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.events.PluginChangeRestoredEvent/>
+        <com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.events.PluginCommentAddedEvent>
+          <verdictCategory>Code-Review</verdictCategory>
+          <commentAddedTriggerApprovalValue>zxcz</commentAddedTriggerApprovalValue>
+        </com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.events.PluginCommentAddedEvent>
+        <com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.events.PluginCommentAddedEvent>
+          <verdictCategory>Verified</verdictCategory>
+          <commentAddedTriggerApprovalValue>aasdasd</commentAddedTriggerApprovalValue>
+        </com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.events.PluginCommentAddedEvent>
+        <com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.events.PluginCommentAddedContainsEvent>
+          <commentAddedCommentContains>reggex</commentAddedCommentContains>
+        </com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.events.PluginCommentAddedContainsEvent>
+        <com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.events.PluginDraftPublishedEvent/>
+        <com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.events.PluginPatchsetCreatedEvent>
+          <excludeDrafts>true</excludeDrafts>
+          <excludeTrivialRebase>false</excludeTrivialRebase>
+          <excludeNoCodeChange>true</excludeNoCodeChange>
+          <excludePrivateState>false</excludePrivateState>
+          <excludeWipState>true</excludeWipState>
+        </com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.events.PluginPatchsetCreatedEvent>
+        <com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.events.PluginPrivateStateChangedEvent/>
+        <com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.events.PluginRefUpdatedEvent/>
+        <com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.events.PluginTopicChangedEvent/>
+        <com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.events.PluginWipStateChangedEvent/>
+      </triggerOnEvents>
+      <dynamicTriggerConfiguration>true</dynamicTriggerConfiguration>
+      <triggerConfigURL>https://dynamictesturl.com</triggerConfigURL>
+    </com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.GerritTrigger>
+  </triggers>
+</matrix-project>
