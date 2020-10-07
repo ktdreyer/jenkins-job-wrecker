@@ -1,0 +1,9 @@
+<org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper plugin="credentials-binding@1.18">
+    <bindings>
+        <com.cloudbees.jenkins.plugins.awscredentials.AmazonWebServicesCredentialsBinding plugin="aws-credentials@1.26">
+            <credentialsId>001</credentialsId>
+            <accessKeyVariable>AWS_ACCESS_KEY</accessKeyVariable>
+            <secretKeyVariable>AWS_SECRET_KEY</secretKeyVariable>
+        </com.cloudbees.jenkins.plugins.awscredentials.AmazonWebServicesCredentialsBinding>
+    </bindings>
+</org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper>
