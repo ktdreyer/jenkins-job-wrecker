@@ -224,7 +224,7 @@ def secretbuildwrapper(top, parent):
         elif binding.tag == 'org.jenkinsci.plugins.credentialsbinding.impl.StringBinding':
             bindings.append({'text': params})
         elif binding.tag == 'com.cloudbees.jenkins.plugins.awscredentials.AmazonWebServicesCredentialsBinding':
-            bindings.append({'amazon-web-services', params})
+            bindings.append({'amazon-web-services': params})
         else:
             raise NotImplementedError("cannot handle XML %s" % binding.tag)
 
