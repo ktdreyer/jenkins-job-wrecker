@@ -1,8 +1,8 @@
 Jenkins Job Wrecker
 -------------------
 
-.. image:: https://travis-ci.com/ktdreyer/jenkins-job-wrecker.svg?branch=master
-       :target: https://travis-ci.com/ktdreyer/jenkins-job-wrecker
+.. image:: https://github.com/ktdreyer/jenkins-job-wrecker/workflows/tests/badge.svg
+             :target: https://github.com/ktdreyer/jenkins-job-wrecker/actions
 
 .. image:: https://badge.fury.io/py/jenkins-job-wrecker.svg
        :target: https://badge.fury.io/py/jenkins-job-wrecker
