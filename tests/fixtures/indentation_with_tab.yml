@@ -1,0 +1,13 @@
+- job:
+    builders:
+    - shell: |-
+        #!/bin/bash
+
+        test() {
+          echo lorem ipsum  dolor
+        }
+
+        test
+    - shell: "test() {echo lorem ipsum\tdolor}; test"
+    name: indentation_with_tab
+    project-type: freestyle

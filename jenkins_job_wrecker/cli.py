@@ -12,6 +12,7 @@ from jenkins_job_wrecker.modules.listview import Listview
 from jenkins_job_wrecker.registry import Registry
 import xml.etree.ElementTree as ET
 import yaml
+from jenkins_job_wrecker.helpers import replace_tab
 
 PY2 = sys.version_info[0] == 2
 if PY2:
@@ -26,22 +27,30 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger('jjwrecker')
 
 
-def str_presenter(dumper, data):
-    if len(data.splitlines()) > 1:  # check for multiline string
-        # The dumper will not respect "style='|'" if it detects trailing
-        # whitespace on any line within the data. For scripts the trailing
-        # whitespace is not important.
-        lines = [l.rstrip() for l in data.splitlines()]
-        data = '\n'.join(lines)
-        return dumper.represent_scalar('tag:yaml.org,2002:str', data,
-                                       style='|')
-    return dumper.represent_scalar('tag:yaml.org,2002:str', data)
+def get_str_presenter(should_replace_tabs=False):
+    def str_presenter(dumper, data):
+        if len(data.splitlines()) > 1:
+            # The dumper will not respect "style='|'" if it detects trailing
+            # whitespace on any line within the data. For scripts the trailing
+            # whitespace is not important.
+            lines = [l.rstrip() for l in data.splitlines()]
+            if should_replace_tabs:
+                # Dumper also will not work on multiline if there are tab escape
+                # characters. If multiline is desired on text that has tab escape
+                # character, tabs should be replaced with spaces.
+                lines = [replace_tab(l) for l in lines]
+            data = '\n'.join(lines)
+            return dumper.represent_scalar('tag:yaml.org,2002:str', data,
+                                           style='|')
+        return dumper.represent_scalar('tag:yaml.org,2002:str', data)
+
+    return str_presenter
 
 
-yaml.add_representer(str, str_presenter)
-if PY2:
-    yaml.add_representer(unicode, str_presenter)
-
+def setup_str_presenter(should_replace_tabs=False):
+    yaml.add_representer(str, get_str_presenter(should_replace_tabs))
+    if PY2:
+        yaml.add_representer(unicode, get_str_presenter(should_replace_tabs))
 
 
 # Given a file with XML, or a string of XML, parse it with
@@ -152,14 +161,20 @@ def parse_args(args):
         help="will ignore the action tag values if there are any. Continues"
              " past NotImplementedError exception for <actions> tags"
     )
+    parser.add_argument(
+        '-t', '--replace-tabs',
+        action='store_true', default=False,
+        help="will replace tab escape character with spaces"
+    )
     return parser.parse_args(args)
 
 
 def main():
     args = parse_args(sys.argv[1:])
-
     if args.verbose:
         log.setLevel(logging.DEBUG)
+
+    setup_str_presenter(args.replace_tabs)
 
     # Options:
     # -f and -n

@@ -4,9 +4,10 @@
         #!/bin/bash
 
         test() {
-          echo test
+          echo lorem ipsum dolor
         }
 
         test
-    name: indentation
+    - shell: test() {echo lorem ipsum dolor}; test
+    name: indentation_without_tab
     project-type: freestyle
